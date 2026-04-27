@@ -205,6 +205,12 @@
     .warehouse-search {
       margin-bottom: 6px;
     }
+
+    .categories-status {
+      font-size: 12px;
+      color: #777;
+      margin-top: 2px;
+    }
   </style>
 </head>
 <body>
@@ -293,6 +299,7 @@
         <select id="categorySelect">
           <option value="">— Выберите категорию —</option>
         </select>
+        <div class="categories-status" id="categoriesStatus"></div>
       </div>
 
       <div class="field">
@@ -452,94 +459,8 @@
   <script>
     let lastCalculation = null;
 
-    // Категории и комиссии
-    const categories = [
-      { name: 'Вибропоглощающий материал для авто', fee: 26.5 },
-      { name: 'Системы подогрева двигателя', fee: 26.0 },
-      { name: 'Контейнеры садовые', fee: 29.5 },
-      { name: 'Напитки кофейные', fee: 21.5 },
-      { name: 'Сундучки свадебные', fee: 32.5 },
-      { name: 'Поролон', fee: 28.0 },
-      { name: 'Ножи раскройные', fee: 29.5 },
-      { name: 'Пленки антидождь', fee: 26.5 },
-      { name: 'Напитки растительные', fee: 21.5 },
-      { name: 'Кахоны', fee: 28.5 },
-      { name: 'Секундомеры', fee: 27.5 },
-      { name: 'Балки продольные', fee: 26.5 },
-      { name: 'Яйцерезки', fee: 29.5 },
-      { name: 'Килты банные', fee: 34.5 },
-      { name: 'Карнавальные маски', fee: 32.5 },
-      { name: 'Фиксаторы спортивного инвентаря', fee: 27.5 },
-      { name: 'Тренажеры реабилитационные', fee: 32.5 },
-      { name: 'Роботы-стеклоочистители', fee: 25.5 },
-      { name: 'Кастрюли', fee: 29.5 },
-      { name: 'Нити кулинарные', fee: 24.5 },
-      { name: 'Умные розетки', fee: 24.5 },
-      { name: 'Замки цепи', fee: 24.5 },
-      { name: 'Средства для удаления обоев', fee: 28.5 },
-      { name: 'Настольные игры эротик', fee: 29.5 },
-      { name: 'Карнавальные головные уборы', fee: 32.5 },
-      { name: 'Конвертеры спутниковые', fee: 29.5 },
-      { name: 'Песок строительный', fee: 20.5 },
-      { name: 'Ремни для фиксации', fee: 32.5 },
-      { name: 'Оверлоки', fee: 25.5 },
-      { name: 'Ручки коробки передач', fee: 26.5 },
-      { name: 'Разъемы', fee: 23.5 },
-      { name: 'Запчасти для батутов', fee: 27.5 },
-      { name: 'Свитеры', fee: 34.5 },
-      { name: 'Конусы спортивные', fee: 27.5 },
-      { name: 'Круги противопролежневые', fee: 25.5 },
-      { name: 'Глиттеры', fee: 32.5 },
-      { name: 'Кресла детские', fee: 26.5 },
-      { name: 'Свечи зажигания', fee: 26.5 },
-      { name: 'Сани тренировочные', fee: 22.5 },
-      { name: 'Держатели для пайки', fee: 31.5 },
-      { name: 'Ювелирные шнурки', fee: 33.0 },
-      { name: 'Маслины', fee: 21.5 },
-      { name: 'Зеркала для магазина', fee: 26.5 },
-      { name: 'Иглы инъекционные', fee: 32.0 },
-      { name: 'Программы питания', fee: 21.5 },
-      { name: 'Хумус', fee: 21.5 },
-      { name: 'Сифоны', fee: 27.5 },
-      { name: 'Парты детские', fee: 26.5 },
-      { name: 'Костюмы для животных', fee: 21.5 },
-      { name: 'Съемники хомутов', fee: 31.5 },
-      { name: 'Кольца для похудения', fee: 25.0 },
-      { name: 'Воски для брекетов', fee: 27.5 },
-      { name: 'Наборы для приготовления шоколада', fee: 21.5 },
-      { name: 'Дымоходы', fee: 27.5 },
-      { name: 'Менажницы', fee: 29.5 },
-      { name: 'Врезки вентиляционные', fee: 27.5 },
-      { name: 'Котлы отопления', fee: 25.5 },
-      { name: 'Составляющие рулевых тяг', fee: 21.5 },
-      { name: 'Анкеры', fee: 28.5 },
-      { name: 'Двигатели для садовой техники', fee: 19.5 },
-      { name: 'Клей для слаймов', fee: 29.5 },
-      { name: 'Рукомойники', fee: 28.5 },
-      { name: 'Ковши', fee: 29.5 },
-      { name: 'Косухи', fee: 34.5 },
-      { name: 'Штаны для животных', fee: 21.5 },
-      { name: 'Защита для клип-кордов', fee: 31.5 },
-      { name: 'Кэроб', fee: 21.5 },
-      { name: 'Аксессуары для детских горшков', fee: 21.5 },
-      { name: 'Замороженные фрукты', fee: 16.5 },
-      { name: 'Матрасы для санок', fee: 29.5 },
-      { name: 'Грипсы', fee: 27.5 },
-      { name: 'Аппараты для запаивания пакетов', fee: 24.5 },
-      { name: 'Румяна', fee: 32.5 },
-      { name: 'Ниппели для спиц', fee: 27.5 },
-      { name: 'Заготовки ключей', fee: 28.5 },
-      { name: 'Спортивное питание и косметика', fee: 25.5 },
-      { name: 'Клапаны для слива воды', fee: 26.5 },
-      { name: 'Контурные карты', fee: 24.5 },
-      { name: 'Замороженная рыба', fee: 16.5 },
-      { name: 'Супы детские', fee: 20.5 },
-      { name: 'Переходы вентиляционные', fee: 27.5 },
-      { name: 'Шары для бильярда', fee: 27.5 },
-      { name: 'Ролики для пресса', fee: 27.5 },
-      { name: 'Смазки для электроинструмента', fee: 31.5 }
-      // дальше по тому же принципу можно дописать остальные позиции
-    ];
+    // Категории будут загружаться из categories.json
+    let categories = [];
 
     const warehouses = [
       { name: 'СЦ Оренбург Центральная', coef: 1.95 },
@@ -675,15 +596,31 @@
 
     function initCategories() {
       const select = document.getElementById('categorySelect');
+      const statusEl = document.getElementById('categoriesStatus');
       if (!select) return;
+
+      // очищаем, кроме первой "— Выберите —"
+      select.innerHTML = '<option value="">— Выберите категорию —</option>';
+
+      if (!categories || categories.length === 0) {
+        if (statusEl) {
+          statusEl.textContent = 'Категории не загружены (проверьте categories.json).';
+        }
+        return;
+      }
 
       categories.forEach(cat => {
         const option = document.createElement('option');
         option.value = cat.fee.toString();
-        option.textContent = cat.name + ' (' + cat.fee.toFixed(2) + '%)';
+        option.textContent = cat.name + ' (' + Number(cat.fee).toFixed(2) + '%)';
         select.appendChild(option);
       });
 
+      if (statusEl) {
+        statusEl.textContent = 'Загружено категорий: ' + categories.length;
+      }
+
+      // При выборе категории сразу подставляем процент в поле комиссии
       select.addEventListener('change', () => {
         const feePercentInput = document.getElementById('feePercent');
         const val = select.value;
@@ -695,7 +632,23 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       initWarehouses();
-      initCategories();
+
+      // Загружаем категории из внешнего файла
+      fetch('categories.json')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+          }
+          return response.json();
+        })
+        .then(data => {
+          categories = data;
+          initCategories();
+        })
+        .catch(err => {
+          console.error('Ошибка загрузки categories.json:', err);
+          initCategories();
+        });
     });
 
     function toNumber(value) {
@@ -802,7 +755,7 @@
       const Margin_percent =
         P_real > 0 ? (Profit_per_unit / P_real) * 100 : 0;
 
-      // Расчёт минимальной цены при целевой марже (без учёта налога в формуле)
+      // Расчёт минимальной цены при целевой марже (налог не учитываем в формуле)
       let P_min = 0;
       if (target_margin_percent > 0 && target_margin_percent < 100) {
         const M = target_margin_percent / 100;
@@ -859,7 +812,7 @@
       } else {
         statusBox.classList.add('neutral');
         statusBox.textContent =
-          'Комментарий: юнит‑экономика около нуля. Любое увеличение затраты или снижение цены может сделать товар убыточным.';
+          'Комментарий: юнит‑экономика около нуля. Любое увеличение затрат или снижение цены может сделать товар убыточным.';
       }
 
       document.getElementById('results').style.display = 'block';
@@ -906,6 +859,9 @@
 
       const catSelect = document.getElementById('categorySelect');
       if (catSelect) catSelect.value = '';
+
+      const statusEl = document.getElementById('categoriesStatus');
+      if (statusEl) statusEl.textContent = '';
 
       filteredWarehouses = [...warehouses];
       renderWarehouseOptions();
