@@ -295,7 +295,13 @@
 
       <div class="field">
         <label for="categorySelect">Категория товара</label>
-        <small>Выберите категорию, чтобы автоматически подставить процент комиссии</small>
+        <small>Поиск и выбор категории, комиссия подставляется автоматически</small>
+        <input
+          type="text"
+          id="categorySearch"
+          class="warehouse-search"
+          placeholder="Поиск по категориям..."
+        />
         <select id="categorySelect">
           <option value="">— Выберите категорию —</option>
         </select>
@@ -461,8 +467,50 @@
 
     // Конфиги
     let categories = [];
+    let filteredCategories = [];
     let warehouses = [];
     let filteredWarehouses = [];
+
+    /* ---------- ХЕЛПЕРЫ ---------- */
+
+    function toNumber(value) {
+      const n = parseFloat((value || '').toString().replace(',', '.'));
+      return isNaN(n) ? 0 : n;
+    }
+
+    function getTariffPerLiter(V_l) {
+      if (V_l <= 0) return 0;
+      if (V_l <= 0.200) return 23;
+      if (V_l <= 0.400) return 26;
+      if (V_l <= 0.600) return 29;
+      if (V_l <= 0.800) return 30;
+      if (V_l <= 1.000) return 32;
+      return null;
+    }
+
+    function hasAnyMainInputsFilled() {
+      const ids = [
+        'price',
+        'purchase',
+        'sppPercent',
+        'buyoutRate',
+        'adsPerSale',
+        'otherCosts',
+        'ilValue',
+        'irpValue',
+        'taxPercent',
+        'acquiringPercent',
+        'lengthCm',
+        'widthCm',
+        'heightCm'
+      ];
+      return ids.some(id => {
+        const el = document.getElementById(id);
+        return el && el.value.toString().trim() !== '';
+      });
+    }
+
+    /* ---------- СКЛАДЫ ---------- */
 
     function initWarehouses() {
       filteredWarehouses = [...warehouses];
@@ -498,29 +546,31 @@
       renderWarehouseOptions();
     }
 
+    /* ---------- КАТЕГОРИИ ---------- */
+
     function initCategories() {
+      const searchInput = document.getElementById('categorySearch');
       const select = document.getElementById('categorySelect');
       const statusEl = document.getElementById('categoriesStatus');
       if (!select) return;
 
-      select.innerHTML = '<option value="">— Выберите категорию —</option>';
-
       if (!categories || categories.length === 0) {
+        select.innerHTML = '<option value="">— Категории не загружены —</option>';
         if (statusEl) {
           statusEl.textContent = 'Категории не загружены (проверьте categories.json).';
         }
         return;
       }
 
-      categories.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat.fee.toString();
-        option.textContent = cat.name + ' (' + Number(cat.fee).toFixed(2) + '%)';
-        select.appendChild(option);
-      });
+      filteredCategories = [...categories];
+      renderCategoryOptions();
 
       if (statusEl) {
         statusEl.textContent = 'Загружено категорий: ' + categories.length;
+      }
+
+      if (searchInput) {
+        searchInput.addEventListener('input', onCategorySearch);
       }
 
       select.addEventListener('change', () => {
@@ -528,9 +578,40 @@
         const val = select.value;
         if (val && feePercentInput) {
           feePercentInput.value = parseFloat(val).toString().replace('.', ',');
+          if (hasAnyMainInputsFilled()) {
+            calculate();
+          }
         }
       });
     }
+
+    function renderCategoryOptions() {
+      const select = document.getElementById('categorySelect');
+      if (!select) return;
+
+      select.innerHTML = '<option value="">— Выберите категорию —</option>';
+
+      filteredCategories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.fee.toString();
+        option.textContent = cat.name + ' (' + Number(cat.fee).toFixed(2) + '%)';
+        select.appendChild(option);
+      });
+    }
+
+    function onCategorySearch(e) {
+      const query = e.target.value.toLowerCase();
+      if (!query) {
+        filteredCategories = [...categories];
+      } else {
+        filteredCategories = categories.filter(cat =>
+          cat.name.toLowerCase().includes(query)
+        );
+      }
+      renderCategoryOptions();
+    }
+
+    /* ---------- ЗАГРУЗКА JSON ---------- */
 
     window.addEventListener('DOMContentLoaded', () => {
       const categoriesStatus = document.getElementById('categoriesStatus');
@@ -569,20 +650,7 @@
         });
     });
 
-    function toNumber(value) {
-      const n = parseFloat((value || '').toString().replace(',', '.'));
-      return isNaN(n) ? 0 : n;
-    }
-
-    function getTariffPerLiter(V_l) {
-      if (V_l <= 0) return 0;
-      if (V_l <= 0.200) return 23;
-      if (V_l <= 0.400) return 26;
-      if (V_l <= 0.600) return 29;
-      if (V_l <= 0.800) return 30;
-      if (V_l <= 1.000) return 32;
-      return null;
-    }
+    /* ---------- РАСЧЁТ ---------- */
 
     function calculate() {
       const lengthCm = toNumber(document.getElementById('lengthCm').value);
@@ -749,6 +817,8 @@
       };
     }
 
+    /* ---------- СБРОС, ТАБЛИЦА, CSV ---------- */
+
     function resetForm() {
       const ids = [
         'productName',
@@ -765,6 +835,7 @@
         'ilValue',
         'irpValue',
         'warehouseSearch',
+        'categorySearch',
         'taxPercent',
         'acquiringPercent',
         'targetMargin'
@@ -782,6 +853,9 @@
 
       filteredWarehouses = [...warehouses];
       renderWarehouseOptions();
+
+      filteredCategories = [...categories];
+      renderCategoryOptions();
 
       document.getElementById('results').style.display = 'none';
       lastCalculation = null;
