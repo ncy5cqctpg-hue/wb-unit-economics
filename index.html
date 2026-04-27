@@ -95,6 +95,16 @@
       color: #555;
     }
 
+    .inline-group {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .inline-group .field {
+      flex: 1;
+    }
+
     button {
       padding: 10px 18px;
       border-radius: 8px;
@@ -172,6 +182,10 @@
       h1 {
         font-size: 20px;
       }
+      .inline-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
     }
 
     .section-divider {
@@ -224,14 +238,14 @@
     <h3>0. Общая информация</h3>
     <div class="grid">
       <div class="field">
-        <label for="productName">Название товара (для таблицы)</label>
+        <label for="productName">Название товара</label>
         <small>Произвольное название, чтобы отличать позиции</small>
         <input type="text" id="productName" placeholder="например, Худи мужская" />
       </div>
     </div>
 
     <!-- 1. Габариты и логистика WB -->
-    <h3>1. Габариты и логистика WB</h3>
+    <h3>1. Габариты и логистика</h3>
     <div class="grid">
       <div class="field">
         <label for="lengthCm">Длина, см</label>
@@ -265,13 +279,13 @@
 
       <div class="field">
         <label for="ilValue">ИЛ в день заказа</label>
-        <small>Индекс логистики (IL)</small>
+        <small>Индекс логистики</small>
         <input type="number" id="ilValue" placeholder="например, 1" step="0.01" />
       </div>
 
       <div class="field">
         <label for="irpValue">ИРП в день заказа</label>
-        <small>Индекс расчёта по цене (IRP)</small>
+        <small>Индекс расчёта по цене</small>
         <input type="number" id="irpValue" placeholder="например, 0.02" step="0.0001" />
       </div>
     </div>
@@ -279,47 +293,49 @@
     <div class="section-divider"></div>
 
     <!-- 2. Цена, комиссии, налоги и прочие расходы -->
-    <h3>2. Цена, комиссии, налоги и прочие расходы</h3>
+    <h3>2. Цена, комиссии, налоги и расходы</h3>
     <div class="grid">
       <div class="field">
-        <label for="price">Цена продажи на маркетплейсе (P)</label>
-        <small>Розничная цена, которую видит покупатель</small>
+        <label for="price">Цена продажи (до СПП), ₽</label>
+        <small>Розничная цена на витрине до скидки/СПП</small>
         <input type="number" id="price" placeholder="например, 1500" step="0.01" />
       </div>
 
       <div class="field">
-        <label for="purchase">Закупочная цена (C_purchase)</label>
+        <label for="purchase">Закупочная цена, ₽</label>
         <small>Себестоимость 1 единицы товара</small>
         <input type="number" id="purchase" placeholder="например, 500" step="0.01" />
       </div>
 
-      <div class="field">
-        <label for="categorySelect">Категория товара</label>
-        <small>Поиск и выбор категории, комиссия подставляется автоматически</small>
-        <input
-          type="text"
-          id="categorySearch"
-          class="warehouse-search"
-          placeholder="Поиск по категориям..."
-        />
-        <select id="categorySelect">
-          <option value="">— Выберите категорию —</option>
-        </select>
-        <div class="categories-status" id="categoriesStatus"></div>
-      </div>
+      <div class="inline-group">
+        <div class="field">
+          <label for="categorySearch">Категория товара</label>
+          <small>Поиск и выбор категории</small>
+          <input
+            type="text"
+            id="categorySearch"
+            class="warehouse-search"
+            placeholder="Поиск по категориям..."
+          />
+          <select id="categorySelect">
+            <option value="">— Выберите категорию —</option>
+          </select>
+          <div class="categories-status" id="categoriesStatus"></div>
+        </div>
 
-      <div class="field">
-        <label for="feePercent">Комиссия маркетплейса, % (fee_percent)</label>
-        <small>Считается от фактической цены реализации</small>
-        <div class="inline-suffix">
-          <input type="number" id="feePercent" placeholder="например, 15" step="0.01" />
-          <span>%</span>
+        <div class="field">
+          <label for="feePercent">Комиссия маркетплейса, %</label>
+          <small>Подставляется из категории, можно изменить вручную</small>
+          <div class="inline-suffix">
+            <input type="number" id="feePercent" placeholder="например, 15" step="0.01" />
+            <span>%</span>
+          </div>
         </div>
       </div>
 
       <div class="field">
-        <label for="sppPercent">Скидка / СПП, % (spp_percent)</label>
-        <small>Сколько процентов скидки падает с цены P</small>
+        <label for="sppPercent">СПП / скидка, %</label>
+        <small>Для наглядности; на расчёт комиссии не влияет</small>
         <div class="inline-suffix">
           <input type="number" id="sppPercent" placeholder="например, 10" step="0.01" />
           <span>%</span>
@@ -327,7 +343,7 @@
       </div>
 
       <div class="field">
-        <label for="buyoutRate">Процент выкупа, % (buyout_rate)</label>
+        <label for="buyoutRate">Процент выкупа, %</label>
         <small>От 0 до 100; например, 80 означает 80% выкупа</small>
         <div class="inline-suffix">
           <input type="number" id="buyoutRate" placeholder="например, 80" step="0.01" />
@@ -336,14 +352,14 @@
       </div>
 
       <div class="field">
-        <label for="adsPerSale">Рекламные расходы на одну выкупленную продажу (ads_per_sale)</label>
+        <label for="adsPerSale">Рекламные расходы на один выкуп, ₽</label>
         <small>Средний расход на рекламу для одной продажи</small>
         <input type="number" id="adsPerSale" placeholder="например, 100" step="0.01" />
       </div>
 
       <div class="field">
-        <label for="otherCosts">Прочие переменные расходы на 1 выкуп (other_costs)</label>
-        <small>Упаковка, доп. комиссии, платные услуги и т.п.</small>
+        <label for="otherCosts">Прочие переменные расходы на один выкуп, ₽</label>
+        <small>Упаковка, доп. услуги и т.п.</small>
         <input type="number" id="otherCosts" placeholder="например, 30" step="0.01" />
       </div>
 
@@ -358,7 +374,7 @@
 
       <div class="field">
         <label for="acquiringPercent">Эквайринг, %</label>
-        <small>Процент от фактической цены реализации</small>
+        <small>Процент от цены продажи до СПП</small>
         <div class="inline-suffix">
           <input type="number" id="acquiringPercent" placeholder="например, 1.5" step="0.01" />
           <span>%</span>
@@ -392,39 +408,42 @@
         Объём товара: <span class="value" id="volumeValue"></span> л
       </div>
       <div class="result-line">
-        Фактическая цена реализации с учётом скидки/СПП (P_real): 
-        <span class="value" id="pRealValue"></span> ₽
+        Цена продажи до СПП: <span class="value" id="priceBeforeSppValue"></span> ₽
       </div>
       <div class="result-line">
-        Комиссия маркетплейса (C_fee): 
+        Цена для покупателя с учётом СПП: 
+        <span class="value" id="priceForBuyerValue"></span> ₽
+      </div>
+      <div class="result-line">
+        Комиссия маркетплейса: 
         <span class="value" id="feeValue"></span> ₽
       </div>
       <div class="result-line">
-        Эквайринг (C_acq): 
+        Эквайринг: 
         <span class="value" id="acqValue"></span> ₽
       </div>
       <div class="result-line">
-        Налог (C_tax, по текущей прибыли): 
+        Налог (по текущей прибыли): 
         <span class="value" id="taxValue"></span> ₽
       </div>
       <div class="result-line">
-        Логистика туда за 1 отправку (C_ship_to): 
+        Логистика туда за 1 отправку: 
         <span class="value" id="shipToValue"></span> ₽
       </div>
       <div class="result-line">
-        Логистика возврата за 1 штуку (C_ship_back): 
+        Логистика возврата за 1 штуку: 
         <span class="value" id="shipBackValue"></span> ₽
       </div>
       <div class="result-line">
-        Средняя логистика на 1 выкупленную единицу (C_logistics_per_unit): 
+        Средняя логистика на один выкуп: 
         <span class="value" id="logisticsValue"></span> ₽
       </div>
       <div class="result-line">
-        Полные переменные затраты на 1 выкупленную единицу (C_total): 
+        Полные переменные затраты на один выкуп: 
         <span class="value" id="totalCostValue"></span> ₽
       </div>
       <div class="result-line">
-        Прибыль на 1 выкупленную единицу (Profit_per_unit): 
+        Прибыль на один выкуп: 
         <span class="value" id="profitValue"></span> ₽
       </div>
       <div class="result-line">
@@ -432,7 +451,7 @@
         <span class="value" id="marginValue"></span> %
       </div>
       <div class="result-line">
-        Минимальная цена при целевой марже (P_min): 
+        Минимальная цена при целевой марже: 
         <span class="value" id="minPriceValue"></span> ₽
       </div>
 
@@ -445,7 +464,8 @@
         <thead>
           <tr>
             <th>Товар</th>
-            <th>Цена, ₽</th>
+            <th>Цена до СПП, ₽</th>
+            <th>Цена для покупателя, ₽</th>
             <th>Комиссия, ₽</th>
             <th>Логистика с выкупом, ₽</th>
             <th>Реклама, ₽</th>
@@ -528,7 +548,7 @@
       filteredWarehouses.forEach((w, index) => {
         const option = document.createElement('option');
         option.value = w.coef.toString();
-        option.textContent = w.name + ' (' + (w.coef * 100).toFixed(0) + '%)';
+        option.textContent = w.name; // без процентов
         if (index === 0) option.selected = true;
         select.appendChild(option);
       });
@@ -594,7 +614,7 @@
       filteredCategories.forEach(cat => {
         const option = document.createElement('option');
         option.value = cat.fee.toString();
-        option.textContent = cat.name + ' (' + Number(cat.fee).toFixed(2) + '%)';
+        option.textContent = cat.name; // без процента в подписи
         select.appendChild(option);
       });
     }
@@ -660,7 +680,7 @@
       const ilValue = toNumber(document.getElementById('ilValue').value);
       const irpValue = toNumber(document.getElementById('irpValue').value);
 
-      const P = toNumber(document.getElementById('price').value);
+      const P = toNumber(document.getElementById('price').value); // цена до СПП
       const C_purchase = toNumber(document.getElementById('purchase').value);
       const fee_percent = toNumber(document.getElementById('feePercent').value);
       const spp_percent = toNumber(document.getElementById('sppPercent').value);
@@ -675,6 +695,9 @@
         alert('Введите корректную цену продажи (P > 0).');
         return;
       }
+
+      // СПП не влияет на комиссию и затраты, считаем только как цену для покупателя
+      const P_for_buyer = P * (1 - spp_percent / 100); // отображаемое значение
 
       let volume_l = 0;
       if (lengthCm > 0 && widthCm > 0 && heightCm > 0) {
@@ -709,9 +732,9 @@
 
       const buyout_rate = Math.min(Math.max(buyout_rate_percent, 0), 100) / 100;
 
-      const P_real = P * (1 - spp_percent / 100);
-      const C_fee = P_real * (fee_percent / 100);
-      const C_acq = P_real * (acquiring_percent / 100);
+      // ВАЖНО: комиссия и эквайринг считаются от цены до СПП (P)
+      const C_fee = P * (fee_percent / 100);
+      const C_acq = P * (acquiring_percent / 100);
 
       let C_logistics_per_unit;
       if (buyout_rate > 0) {
@@ -730,17 +753,17 @@
         ads_per_sale +
         other_costs;
 
-      let Profit_before_tax = P_real - C_base_before_tax;
+      let Profit_before_tax = P - C_base_before_tax;
       let C_tax = 0;
       if (Profit_before_tax > 0 && tax_percent > 0) {
         C_tax = Profit_before_tax * (tax_percent / 100);
       }
 
       const C_total = C_base_before_tax + C_tax;
-      const Profit_per_unit = P_real - C_total;
-      const Margin_percent =
-        P_real > 0 ? (Profit_per_unit / P_real) * 100 : 0;
+      const Profit_per_unit = P - C_total;
+      const Margin_percent = P > 0 ? (Profit_per_unit / P) * 100 : 0;
 
+      // Минимальная цена при целевой марже считается тоже от цены до СПП
       let P_min = 0;
       if (target_margin_percent > 0 && target_margin_percent < 100) {
         const M = target_margin_percent / 100;
@@ -749,18 +772,16 @@
           C_purchase + C_logistics_per_unit + ads_per_sale + other_costs;
         const denominator = 1 - k - M;
         if (denominator > 0) {
-          const P_real_min = C_base_for_min / denominator;
-          const sppFactor = 1 - spp_percent / 100;
-          if (sppFactor > 0) {
-            P_min = P_real_min / sppFactor;
-          }
+          P_min = C_base_for_min / denominator;
         }
       }
 
       document.getElementById('volumeValue').textContent =
         volume_l.toFixed(3);
-      document.getElementById('pRealValue').textContent =
-        P_real.toFixed(2);
+      document.getElementById('priceBeforeSppValue').textContent =
+        P.toFixed(2);
+      document.getElementById('priceForBuyerValue').textContent =
+        P_for_buyer.toFixed(2);
       document.getElementById('feeValue').textContent =
         C_fee.toFixed(2);
       document.getElementById('acqValue').textContent =
@@ -804,7 +825,9 @@
 
       lastCalculation = {
         productName: document.getElementById('productName').value || 'Без названия',
-        price: P,
+        priceBeforeSpp: P,
+        priceForBuyer: P_for_buyer,
+        price: P, // для совместимости
         fee: C_fee,
         logistics_per_unit: C_logistics_per_unit,
         ads: ads_per_sale,
@@ -875,8 +898,11 @@
       const nameCell = document.createElement('td');
       nameCell.textContent = lastCalculation.productName;
 
-      const priceCell = document.createElement('td');
-      priceCell.textContent = lastCalculation.price.toFixed(2);
+      const priceBeforeCell = document.createElement('td');
+      priceBeforeCell.textContent = lastCalculation.priceBeforeSpp.toFixed(2);
+
+      const priceBuyerCell = document.createElement('td');
+      priceBuyerCell.textContent = lastCalculation.priceForBuyer.toFixed(2);
 
       const feeCell = document.createElement('td');
       feeCell.textContent = lastCalculation.fee.toFixed(2);
@@ -906,7 +932,8 @@
       marginCell.textContent = lastCalculation.margin.toFixed(2);
 
       row.appendChild(nameCell);
-      row.appendChild(priceCell);
+      row.appendChild(priceBeforeCell);
+      row.appendChild(priceBuyerCell);
       row.appendChild(feeCell);
       row.appendChild(logCell);
       row.appendChild(adsCell);
