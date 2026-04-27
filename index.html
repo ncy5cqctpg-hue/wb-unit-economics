@@ -13,42 +13,97 @@
     body {
       margin: 0;
       padding: 20px;
-      background: #f5f7fb;
+      background: #eef1f7;
       color: #222;
     }
 
-    .container {
-      max-width: 1100px;
+    .app-shell {
+      max-width: 1200px;
       margin: 0 auto;
-      background: #fff;
-      border-radius: 12px;
-      padding: 16px 18px 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     }
 
-    h1 {
-      font-size: 22px;
-      margin-top: 0;
-      margin-bottom: 6px;
-    }
-
-    .subtitle {
-      font-size: 14px;
-      color: #555;
+    .app-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 8px;
       margin-bottom: 16px;
     }
 
-    h3 {
-      margin-top: 16px;
-      margin-bottom: 8px;
+    .app-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .app-title h1 {
+      font-size: 22px;
+      margin: 0;
+    }
+
+    .app-title .subtitle {
+      font-size: 13px;
+      color: #555;
+    }
+
+    .app-meta {
+      font-size: 12px;
+      color: #777;
+      text-align: right;
+    }
+
+    .layout-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 2fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .layout-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px 16px 16px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       font-size: 15px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .card-title span.icon {
+      font-size: 18px;
+    }
+
+    .card-subtitle {
+      font-size: 11px;
+      color: #6b7280;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 12px 18px;
-      margin-bottom: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px 16px;
+      margin-bottom: 4px;
     }
 
     .field {
@@ -60,30 +115,32 @@
     .field label {
       font-size: 13px;
       margin-bottom: 3px;
-      color: #333;
+      color: #374151;
     }
 
     .field small {
       font-size: 11px;
-      color: #777;
+      color: #9ca3af;
       margin-bottom: 3px;
     }
 
     .field input,
     .field select {
-      padding: 6px 8px;
-      border-radius: 6px;
-      border: 1px solid #d0d4e0;
+      padding: 7px 9px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
       font-size: 13px;
       outline: none;
-      transition: border-color 0.15s;
-      background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+      background: #f9fafb;
       width: 100%;
     }
 
     .field input:focus,
     .field select:focus {
-      border-color: #4b7cff;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.2);
+      background: #ffffff;
     }
 
     .inline-suffix {
@@ -94,103 +151,142 @@
 
     .inline-suffix span {
       font-size: 12px;
-      color: #555;
+      color: #6b7280;
       white-space: nowrap;
     }
 
-    .inline-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: flex-end;
+    .warehouse-search {
+      margin-bottom: 4px;
     }
 
-    .inline-group .field {
-      flex: 1 1 240px;
-    }
-
-    button {
-      padding: 8px 14px;
-      border-radius: 6px;
-      border: none;
-      background: #4b7cff;
-      color: #fff;
-      font-size: 13px;
-      cursor: pointer;
-      margin-bottom: 14px;
-      margin-right: 8px;
-    }
-
-    button:hover {
-      background: #3b69e0;
-    }
-
-    .secondary {
-      background: #e4e7f5;
-      color: #222;
-    }
-
-    .secondary:hover {
-      background: #d6daf0;
-    }
-
-    .results {
-      border-top: 1px solid #e3e6f0;
-      padding-top: 12px;
-      margin-top: 8px;
-    }
-
-    .results h2 {
-      font-size: 17px;
-      margin: 0 0 8px;
-    }
-
-    .result-line {
-      font-size: 13px;
-      margin-bottom: 3px;
-    }
-
-    .result-line span.value {
-      font-weight: 600;
-    }
-
-    .status {
-      margin-top: 8px;
-      padding: 8px 10px;
-      border-radius: 6px;
-      font-size: 13px;
-    }
-
-    .status.good {
-      background: #e6f6ec;
-      color: #176b3a;
-      border: 1px solid #b8e3c7;
-    }
-
-    .status.bad {
-      background: #ffe9e9;
-      color: #b42318;
-      border: 1px solid #f5b5b2;
-    }
-
-    .status.neutral {
-      background: #f3f4f8;
-      color: #444;
-      border: 1px solid #d7d9e5;
-    }
-
-    @media (max-width: 480px) {
-      .container {
-        padding: 12px 10px 16px;
-      }
-      h1 {
-        font-size: 20px;
-      }
+    .categories-status {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 2px;
     }
 
     .section-divider {
       margin: 10px 0;
-      border-bottom: 1px dashed #d7d9e5;
+      border-bottom: 1px dashed #d1d5db;
+    }
+
+    .actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.15s, box-shadow 0.15s, transform 0.05s;
+      white-space: nowrap;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: #fff;
+      box-shadow: 0 8px 16px rgba(79, 70, 229, 0.35);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #4338ca, #4f46e5);
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-secondary:hover {
+      background: #d1d5db;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #4b5563;
+      border: 1px dashed #d1d5db;
+    }
+
+    .btn-ghost:hover {
+      background: #f3f4f6;
+    }
+
+    .results-block {
+      margin-top: 6px;
+      border-radius: 10px;
+      background: #f3f4ff;
+      padding: 10px 11px;
+      border: 1px solid rgba(129, 140, 248, 0.4);
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 6px 14px;
+    }
+
+    .result-item {
+      font-size: 13px;
+      color: #111827;
+    }
+
+    .result-item-label {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    .result-item-value {
+      font-weight: 600;
+    }
+
+    .status-box {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .status-box.good {
+      background: #ecfdf3;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .status-box.bad {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+
+    .status-box.neutral {
+      background: #f9fafb;
+      color: #374151;
+      border: 1px solid #e5e7eb;
+    }
+
+    .status-icon {
+      font-size: 16px;
+      line-height: 1;
+      margin-top: 1px;
+    }
+
+    .status-text {
+      flex: 1;
     }
 
     table {
@@ -201,14 +297,15 @@
     }
 
     th, td {
-      border: 1px solid #e0e3ee;
+      border: 1px solid #e5e7eb;
       padding: 4px 6px;
       text-align: right;
     }
 
     th {
-      background: #f1f3fb;
+      background: #f3f4f6;
       font-weight: 600;
+      color: #374151;
     }
 
     td:first-child,
@@ -216,274 +313,436 @@
       text-align: left;
     }
 
-    .warehouse-search {
-      margin-bottom: 4px;
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
     }
 
-    .categories-status {
+    .history-header-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .history-header-subtitle {
       font-size: 11px;
-      color: #777;
-      margin-top: 2px;
+      color: #9ca3af;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 12px 8px;
+      }
+
+      .card {
+        padding: 12px 12px 14px;
+      }
+
+      .actions-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      button {
+        justify-content: center;
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Калькулятор юнит‑экономики для маркетплейса</h1>
-    <div class="subtitle">
-      Введите параметры товара и получите расчёт прибыли, маржи и минимальной цены при целевой марже.
-    </div>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title">
+        <h1>Калькулятор юнит‑экономики</h1>
+        <div class="subtitle">Быстрый расчёт прибыльности товара на маркетплейсе.</div>
+      </div>
+      <div class="app-meta">
+        <div>v1.0 · офлайн‑расчёт в браузере</div>
+      </div>
+    </header>
 
-    <!-- 0. Общая информация -->
-    <h3>0. Общая информация</h3>
-    <div class="grid">
-      <div class="field">
-        <label for="productName">Название товара</label>
-        <small>Произвольное название, чтобы отличать позиции</small>
-        <input type="text" id="productName" placeholder="например, Худи мужская" />
-      </div>
-    </div>
+    <div class="layout-grid">
+      <!-- Левая колонка: товар + логистика -->
+      <div class="left-column">
+        <!-- Блок 1: Товар -->
+        <section class="card" id="card-product">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <span class="icon">📦</span>
+                <span>1. Карточка товара</span>
+              </div>
+              <div class="card-subtitle">
+                Название, категория, комиссия и цены.
+              </div>
+            </div>
+          </div>
 
-    <!-- 1. Габариты и логистика -->
-    <h3>1. Габариты и логистика</h3>
-    <div class="grid">
-      <div class="field">
-        <label for="lengthCm">Длина, см</label>
-        <small>Габарит товара в упаковке</small>
-        <input type="number" id="lengthCm" placeholder="например, 30" step="0.01" />
-      </div>
+          <div class="grid">
+            <div class="field">
+              <label for="productName">Название товара</label>
+              <small>Произвольное имя для удобства</small>
+              <input type="text" id="productName" placeholder="например, Худи мужская" />
+            </div>
 
-      <div class="field">
-        <label for="widthCm">Ширина, см</label>
-        <small>Габарит товара в упаковке</small>
-        <input type="number" id="widthCm" placeholder="например, 20" step="0.01" />
-      </div>
+            <div class="field">
+              <label for="price">Цена продажи (до СПП), ₽</label>
+              <small>Цена на витрине без скидки/СПП</small>
+              <input type="number" id="price" placeholder="например, 1500" step="0.01" />
+            </div>
 
-      <div class="field">
-        <label for="heightCm">Высота, см</label>
-        <small>Габарит товара в упаковке</small>
-        <input type="number" id="heightCm" placeholder="например, 10" step="0.01" />
-      </div>
+            <div class="field">
+              <label for="sppPercent">СПП / скидка, %</label>
+              <small>Для отображения цены для покупателя</small>
+              <div class="inline-suffix">
+                <input type="number" id="sppPercent" placeholder="например, 10" step="0.01" />
+                <span>%</span>
+              </div>
+            </div>
+          </div>
 
-      <div class="field">
-        <label for="warehouse">Склад отгрузки</label>
-        <small>Поиск и выбор склада, коэффициент влияет на прямую логистику</small>
-        <input
-          type="text"
-          id="warehouseSearch"
-          class="warehouse-search"
-          placeholder="Поиск по складам..."
-        />
-        <select id="warehouse"></select>
-      </div>
+          <div class="section-divider"></div>
 
-      <div class="field">
-        <label for="ilValue">ИЛ в день заказа</label>
-        <small>Индекс логистики</small>
-        <input type="number" id="ilValue" placeholder="например, 1" step="0.01" />
-      </div>
+          <div class="grid">
+            <div class="field">
+              <label for="categorySearch">Категория товара</label>
+              <small>Поиск и выбор категории</small>
+              <input
+                type="text"
+                id="categorySearch"
+                class="warehouse-search"
+                placeholder="Поиск по категориям..."
+              />
+              <select id="categorySelect">
+                <option value="">— Выберите категорию —</option>
+              </select>
+              <div class="categories-status" id="categoriesStatus"></div>
+            </div>
 
-      <div class="field">
-        <label for="irpValue">ИРП в день заказа</label>
-        <small>Индекс расчёта по цене</small>
-        <input type="number" id="irpValue" placeholder="например, 0.02" step="0.0001" />
-      </div>
-    </div>
+            <div class="field">
+              <label for="feePercent">Комиссия маркетплейса, %</label>
+              <small>Подставляется из категории, можно изменить</small>
+              <div class="inline-suffix">
+                <input type="number" id="feePercent" placeholder="например, 15" step="0.01" />
+                <span>%</span>
+              </div>
+            </div>
 
-    <div class="section-divider"></div>
+            <div class="field">
+              <label for="purchase">Закупочная цена, ₽</label>
+              <small>Себестоимость одной единицы</small>
+              <input type="number" id="purchase" placeholder="например, 500" step="0.01" />
+            </div>
+          </div>
+        </section>
 
-    <!-- 2. Цена, комиссии, налоги и прочие расходы -->
-    <h3>2. Цена, комиссии, налоги и расходы</h3>
-    <div class="grid">
-      <div class="field">
-        <label for="price">Цена продажи (до СПП), ₽</label>
-        <small>Розничная цена на витрине до скидки/СПП</small>
-        <input type="number" id="price" placeholder="например, 1500" step="0.01" />
-      </div>
+        <!-- Блок 2: Логистика -->
+        <section class="card" id="card-logistics">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <span class="icon">🚚</span>
+                <span>2. Логистика и габариты</span>
+              </div>
+              <div class="card-subtitle">
+                Склад, индексы и размер упаковки.
+              </div>
+            </div>
+          </div>
 
-      <div class="field">
-        <label for="purchase">Закупочная цена, ₽</label>
-        <small>Себестоимость 1 единицы товара</small>
-        <input type="number" id="purchase" placeholder="например, 500" step="0.01" />
-      </div>
-    </div>
+          <div class="grid">
+            <div class="field">
+              <label for="warehouse">Склад отгрузки</label>
+              <small>Поиск и выбор склада</small>
+              <input
+                type="text"
+                id="warehouseSearch"
+                class="warehouse-search"
+                placeholder="Поиск по складам..."
+              />
+              <select id="warehouse"></select>
+            </div>
 
-    <div class="grid">
-      <div class="field">
-        <label for="categorySearch">Категория товара</label>
-        <small>Поиск и выбор категории</small>
-        <input
-          type="text"
-          id="categorySearch"
-          class="warehouse-search"
-          placeholder="Поиск по категориям..."
-        />
-        <select id="categorySelect">
-          <option value="">— Выберите категорию —</option>
-        </select>
-        <div class="categories-status" id="categoriesStatus"></div>
-      </div>
+            <div class="field">
+              <label for="ilValue">ИЛ в день заказа</label>
+              <small>Индекс логистики (IL)</small>
+              <input type="number" id="ilValue" placeholder="например, 1" step="0.01" />
+            </div>
 
-      <div class="field">
-        <label for="feePercent">Комиссия маркетплейса, %</label>
-        <small>Подставляется из категории, можно изменить вручную</small>
-        <div class="inline-suffix">
-          <input type="number" id="feePercent" placeholder="например, 15" step="0.01" />
-          <span>%</span>
-        </div>
-      </div>
-    </div>
+            <div class="field">
+              <label for="irpValue">ИРП в день заказа</label>
+              <small>Индекс расчёта по цене (IRP)</small>
+              <input type="number" id="irpValue" placeholder="например, 0.02" step="0.0001" />
+            </div>
+          </div>
 
-    <div class="grid">
-      <div class="field">
-        <label for="sppPercent">СПП / скидка, %</label>
-        <small>Для наглядности; не влияет на расчёт комиссии</small>
-        <div class="inline-suffix">
-          <input type="number" id="sppPercent" placeholder="например, 10" step="0.01" />
-          <span>%</span>
-        </div>
-      </div>
+          <div class="section-divider"></div>
 
-      <div class="field">
-        <label for="buyoutRate">Процент выкупа, %</label>
-        <small>Например, 80 означает 80% выкупа</small>
-        <div class="inline-suffix">
-          <input type="number" id="buyoutRate" placeholder="например, 80" step="0.01" />
-          <span>%</span>
-        </div>
-      </div>
+          <div class="grid">
+            <div class="field">
+              <label for="lengthCm">Длина, см</label>
+              <small>Размер товара в упаковке</small>
+              <input type="number" id="lengthCm" placeholder="например, 30" step="0.01" />
+            </div>
 
-      <div class="field">
-        <label for="adsPercent">Рекламные расходы (ДРР), %</label>
-        <small>Процент от цены до СПП</small>
-        <div class="inline-suffix">
-          <input type="number" id="adsPercent" placeholder="например, 10" step="0.01" />
-          <span>%</span>
-        </div>
-      </div>
+            <div class="field">
+              <label for="widthCm">Ширина, см</label>
+              <small>Размер товара в упаковке</small>
+              <input type="number" id="widthCm" placeholder="например, 20" step="0.01" />
+            </div>
 
-      <div class="field">
-        <label for="otherCosts">Прочие переменные расходы на один выкуп, ₽</label>
-        <small>Упаковка, доп. услуги и т.п.</small>
-        <input type="number" id="otherCosts" placeholder="например, 30" step="0.01" />
-      </div>
-
-      <div class="field">
-        <label for="taxPercent">Налог, %</label>
-        <small>Например, УСН 6% от прибыли</small>
-        <div class="inline-suffix">
-          <input type="number" id="taxPercent" placeholder="например, 6" step="0.01" />
-          <span>%</span>
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="acquiringPercent">Эквайринг, %</label>
-        <small>Процент от цены продажи до СПП</small>
-        <div class="inline-suffix">
-          <input type="number" id="acquiringPercent" placeholder="например, 1.5" step="0.01" />
-          <span>%</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-divider"></div>
-
-    <!-- 3. Целевая маржа -->
-    <h3>3. Целевая маржа</h3>
-    <div class="grid">
-      <div class="field">
-        <label for="targetMargin">Целевая маржа, %</label>
-        <small>Используется для расчёта минимальной цены</small>
-        <div class="inline-suffix">
-          <input type="number" id="targetMargin" placeholder="например, 20" step="0.01" />
-          <span>%</span>
-        </div>
-      </div>
-    </div>
-
-    <button onclick="calculate()">Рассчитать</button>
-    <button class="secondary" onclick="resetForm()">Сбросить</button>
-    <button class="secondary" onclick="saveToTable()">Сохранить в таблицу</button>
-    <button class="secondary" onclick="exportToCSV()">Экспорт в CSV</button>
-
-    <div class="results" id="results" style="display:none;">
-      <h2>Результаты</h2>
-      <div class="result-line">
-        Объём товара: <span class="value" id="volumeValue"></span> л
-      </div>
-      <div class="result-line">
-        Цена продажи до СПП: <span class="value" id="priceBeforeSppValue"></span> ₽
-      </div>
-      <div class="result-line">
-        Цена для покупателя с учётом СПП: 
-        <span class="value" id="priceForBuyerValue"></span> ₽
-      </div>
-      <div class="result-line">
-        Комиссия маркетплейса: 
-        <span class="value" id="feeValue"></span> ₽
-      </div>
-      <div class="result-line">
-        Эквайринг: 
-        <span class="value" id="acqValue"></span> ₽
-      </div>
-      <div class="result-line">
-        Налог: 
-        <span class="value" id="taxValue"></span> ₽
-      </div>
-      <div class="result-line">
-        Логистика туда за 1 отправку: 
-        <span class="value" id="shipToValue"></span> ₽
-      </div>
-      <div class="result-line">
-        Логистика возврата за 1 штуку: 
-        <span class="value" id="shipBackValue"></span> ₽
-      </div>
-      <div class="result-line">
-        Средняя логистика на один выкуп: 
-        <span class="value" id="logisticsValue"></span> ₽
-      </div>
-      <div class="result-line">
-        Полные переменные затраты на один выкуп: 
-        <span class="value" id="totalCostValue"></span> ₽
-      </div>
-      <div class="result-line">
-        Прибыль на один выкуп: 
-        <span class="value" id="profitValue"></span> ₽
-      </div>
-      <div class="result-line">
-        Маржа: 
-        <span class="value" id="marginValue"></span> %
-      </div>
-      <div class="result-line">
-        Минимальная цена при целевой марже: 
-        <span class="value" id="minPriceValue"></span> ₽
+            <div class="field">
+              <label for="heightCm">Высота, см</label>
+              <small>Размер товара в упаковке</small>
+              <input type="number" id="heightCm" placeholder="например, 10" step="0.01" />
+            </div>
+          </div>
+        </section>
       </div>
 
-      <div class="status" id="statusBox"></div>
-    </div>
+      <!-- Правая колонка: расходы + результаты -->
+      <div class="right-column">
+        <!-- Блок 3: Расходы -->
+        <section class="card" id="card-costs">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <span class="icon">💸</span>
+                <span>3. Расходы и выкуп</span>
+              </div>
+              <div class="card-subtitle">
+                Реклама, прочие расходы, налог, эквайринг, выкуп.
+              </div>
+            </div>
+          </div>
 
-    <div id="tableSection" style="margin-top: 14px; display:none;">
-      <h3>Сохранённые расчёты</h3>
-      <table id="resultsTable">
-        <thead>
-          <tr>
-            <th>Товар</th>
-            <th>Цена до СПП, ₽</th>
-            <th>Цена для покупателя, ₽</th>
-            <th>Комиссия, ₽</th>
-            <th>Логистика с выкупом, ₽</th>
-            <th>Реклама, ₽</th>
-            <th>Прочие, ₽</th>
-            <th>Себестоимость, ₽</th>
-            <th>Эквайринг, ₽</th>
-            <th>Налог, ₽</th>
-            <th>Прибыль, ₽</th>
-            <th>Маржа, %</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+          <div class="grid">
+            <div class="field">
+              <label for="adsPercent">Рекламные расходы (ДРР), %</label>
+              <small>От цены до СПП</small>
+              <div class="inline-suffix">
+                <input type="number" id="adsPercent" placeholder="например, 10" step="0.01" />
+                <span>%</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="otherCosts">Прочие переменные расходы, ₽</label>
+              <small>Упаковка, доп. услуги и т.п.</small>
+              <input type="number" id="otherCosts" placeholder="например, 30" step="0.01" />
+            </div>
+
+            <div class="field">
+              <label for="buyoutRate">Процент выкупа, %</label>
+              <small>Например, 80 = 80% выкупа</small>
+              <div class="inline-suffix">
+                <input type="number" id="buyoutRate" placeholder="например, 80" step="0.01" />
+                <span>%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <div class="grid">
+            <div class="field">
+              <label for="taxPercent">Налог, %</label>
+              <small>Например, УСН 6% от прибыли</small>
+              <div class="inline-suffix">
+                <input type="number" id="taxPercent" placeholder="например, 6" step="0.01" />
+                <span>%</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="acquiringPercent">Эквайринг, %</label>
+              <small>От цены до СПП</small>
+              <div class="inline-suffix">
+                <input type="number" id="acquiringPercent" placeholder="например, 1.5" step="0.01" />
+                <span>%</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="targetMargin">Целевая маржа, %</label>
+              <small>Для расчёта минимальной цены</small>
+              <div class="inline-suffix">
+                <input type="number" id="targetMargin" placeholder="например, 20" step="0.01" />
+                <span>%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions-row">
+            <button class="btn-primary" onclick="calculate()">
+              🔢 Рассчитать
+            </button>
+            <button class="btn-secondary" onclick="resetForm()">
+              ♻️ Сбросить
+            </button>
+            <button class="btn-ghost" onclick="saveToTable()">
+              💾 Сохранить в историю
+            </button>
+            <button class="btn-ghost" onclick="exportToCSV()">
+              ⬇️ Экспорт в CSV
+            </button>
+          </div>
+        </section>
+
+        <!-- Блок 4: Результаты -->
+        <section class="card" id="card-results">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <span class="icon">📊</span>
+                <span>4. Результаты и история</span>
+              </div>
+              <div class="card-subtitle">
+                Итоговые показатели и сохранённые расчёты.
+              </div>
+            </div>
+          </div>
+
+          <div id="results" style="display:none;">
+            <div class="results-block">
+              <div class="results-grid">
+                <div class="result-item">
+                  <div class="result-item-label">Объём товара</div>
+                  <div class="result-item-value">
+                    <span id="volumeValue"></span> л
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Цена до СПП</div>
+                  <div class="result-item-value">
+                    <span id="priceBeforeSppValue"></span> ₽
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Цена для покупателя</div>
+                  <div class="result-item-value">
+                    <span id="priceForBuyerValue"></span> ₽
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Комиссия маркетплейса</div>
+                  <div class="result-item-value">
+                    <span id="feeValue"></span> ₽
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Эквайринг</div>
+                  <div class="result-item-value">
+                    <span id="acqValue"></span> ₽
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Налог</div>
+                  <div class="result-item-value">
+                    <span id="taxValue"></span> ₽
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Логистика туда</div>
+                  <div class="result-item-value">
+                    <span id="shipToValue"></span> ₽
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Логистика возврата</div>
+                  <div class="result-item-value">
+                    <span id="shipBackValue"></span> ₽
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Логистика на один выкуп</div>
+                  <div class="result-item-value">
+                    <span id="logisticsValue"></span> ₽
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Полные переменные затраты</div>
+                  <div class="result-item-value">
+                    <span id="totalCostValue"></span> ₽
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Прибыль на выкуп</div>
+                  <div class="result-item-value">
+                    <span id="profitValue"></span> ₽
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Маржа</div>
+                  <div class="result-item-value">
+                    <span id="marginValue"></span> %
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Мин. цена при целевой марже</div>
+                  <div class="result-item-value">
+                    <span id="minPriceValue"></span> ₽
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="status-box" id="statusBox">
+              <div class="status-icon">ℹ️</div>
+              <div class="status-text"></div>
+            </div>
+          </div>
+
+          <div id="tableSection" style="margin-top: 14px; display:none;">
+            <div class="history-header">
+              <div class="history-header-title">
+                <span>📚 История расчётов</span>
+                <span class="history-header-subtitle">
+                  Сохраняется локально в текущей вкладке
+                </span>
+              </div>
+            </div>
+            <table id="resultsTable">
+              <thead>
+                <tr>
+                  <th>Товар</th>
+                  <th>Цена до СПП, ₽</th>
+                  <th>Цена для покупателя, ₽</th>
+                  <th>Комиссия, ₽</th>
+                  <th>Логистика с выкупом, ₽</th>
+                  <th>Реклама, ₽</th>
+                  <th>Прочие, ₽</th>
+                  <th>Себестоимость, ₽</th>
+                  <th>Эквайринг, ₽</th>
+                  <th>Налог, ₽</th>
+                  <th>Прибыль, ₽</th>
+                  <th>Маржа, %</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 
@@ -570,6 +829,8 @@
 
     /* ---------- КАТЕГОРИИ ---------- */
 
+    let categorySearchTimer = null;
+
     function initCategories() {
       const searchInput = document.getElementById('categorySearch');
       const select = document.getElementById('categorySelect');
@@ -592,7 +853,13 @@
       }
 
       if (searchInput) {
-        searchInput.addEventListener('input', onCategorySearch);
+        searchInput.addEventListener('input', e => {
+          clearTimeout(categorySearchTimer);
+          const value = e.target.value;
+          categorySearchTimer = setTimeout(() => {
+            onCategorySearch(value);
+          }, 200);
+        });
       }
 
       select.addEventListener('change', () => {
@@ -607,9 +874,9 @@
         const feeVal = Number(cat.fee);
         if (isNaN(feeVal)) return;
 
-        // важный фикс: в input type="number" пишем строку с точкой
         feePercentInput.value = feeVal.toString();
 
+        // Автопересчёт можно оставить; если будет тяжело на мобилках — отключим
         if (hasAnyMainInputsFilled()) {
           calculate();
         }
@@ -630,8 +897,8 @@
       });
     }
 
-    function onCategorySearch(e) {
-      const query = e.target.value.toLowerCase();
+    function onCategorySearch(queryRaw) {
+      const query = (queryRaw || '').toLowerCase();
       if (!query) {
         filteredCategories = [...categories];
       } else {
@@ -811,21 +1078,22 @@
         P_min > 0 ? P_min.toFixed(2) : '—';
 
       const statusBox = document.getElementById('statusBox');
+      const statusText = statusBox.querySelector('.status-text');
       statusBox.classList.remove('good', 'bad', 'neutral');
 
       const eps = 0.01;
       if (Profit_per_unit > eps) {
         statusBox.classList.add('good');
-        statusBox.textContent =
-          'Комментарий: юнит‑экономика прибыльная. Товар приносит прибыль с одной выкупленной единицы.';
+        statusText.textContent =
+          'Юнит‑экономика прибыльная. Товар приносит прибыль с каждой выкупленной единицы.';
       } else if (Profit_per_unit < -eps) {
         statusBox.classList.add('bad');
-        statusBox.textContent =
-          'Комментарий: юнит‑экономика убыточная. При текущих условиях товар теряет деньги на каждой выкупленной единицы.';
+        statusText.textContent =
+          'Юнит‑экономика убыточная. При текущих условиях товар теряет деньги на каждой выкупленной единице.';
       } else {
         statusBox.classList.add('neutral');
-        statusBox.textContent =
-          'Комментарий: юнит‑экономика около нуля. Любое увеличение затрат или снижение цены может сделать товар убыточным.';
+        statusText.textContent =
+          'Юнит‑экономика около нуля. Любое увеличение затрат или снижение цены может сделать товар убыточным.';
       }
 
       document.getElementById('results').style.display = 'block';
