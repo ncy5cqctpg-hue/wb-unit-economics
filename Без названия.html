@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Калькулятор юнит‑экономики для маркетплейса</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #f5f7fb;
+      color: #222;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 24px 28px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px 24px;
+      margin-bottom: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .field label {
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: #333;
+    }
+
+    .field small {
+      font-size: 11px;
+      color: #777;
+      margin-bottom: 4px;
+    }
+
+    .field input,
+    .field select {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #d0d4e0;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+      background: #fff;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: #4b7cff;
+    }
+
+    .inline-suffix {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .inline-suffix span {
+      font-size: 13px;
+      color: #555;
+    }
+
+    button {
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: none;
+      background: #4b7cff;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 18px;
+      margin-right: 8px;
+    }
+
+    button:hover {
+      background: #3b69e0;
+    }
+
+    .secondary {
+      background: #e4e7f5;
+      color: #222;
+    }
+
+    .secondary:hover {
+      background: #d6daf0;
+    }
+
+    .results {
+      border-top: 1px solid #e3e6f0;
+      padding-top: 16px;
+      margin-top: 10px;
+    }
+
+    .results h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+    }
+
+    .result-line {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .result-line span.value {
+      font-weight: 600;
+    }
+
+    .status {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .status.good {
+      background: #e6f6ec;
+      color: #176b3a;
+      border: 1px solid #b8e3c7;
+    }
+
+    .status.bad {
+      background: #ffe9e9;
+      color: #b42318;
+      border: 1px solid #f5b5b2;
+    }
+
+    .status.neutral {
+      background: #f3f4f8;
+      color: #444;
+      border: 1px solid #d7d9e5;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 16px;
+      }
+      h1 {
+        font-size: 20px;
+      }
+    }
+
+    .section-divider {
+      margin: 12px 0;
+      border-bottom: 1px dashed #d7d9e5;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border: 1px solid #e0e3ee;
+      padding: 6px 8px;
+      text-align: right;
+    }
+
+    th {
+      background: #f1f3fb;
+      font-weight: 600;
+    }
+
+    td:first-child,
+    th:first-child {
+      text-align: left;
+    }
+
+    .warehouse-search {
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Калькулятор юнит‑экономики для маркетплейса</h1>
+    <div class="subtitle">
+      Введите параметры товара и получите расчёт прибыли, маржи и минимальной цены при целевой марже.
+    </div>
+
+    <!-- 0. Общая информация -->
+    <h3>0. Общая информация</h3>
+    <div class="grid">
+      <div class="field">
+        <label for="productName">Название товара (для таблицы)</label>
+        <small>Произвольное название, чтобы отличать позиции</small>
+        <input type="text" id="productName" placeholder="например, Худи мужская" />
+      </div>
+    </div>
+
+    <!-- 1. Габариты и логистика WB -->
+    <h3>1. Габариты и логистика WB</h3>
+    <div class="grid">
+      <div class="field">
+        <label for="lengthCm">Длина, см</label>
+        <small>Габарит товара в упаковке</small>
+        <input type="number" id="lengthCm" placeholder="например, 30" step="0.01" />
+      </div>
+
+      <div class="field">
+        <label for="widthCm">Ширина, см</label>
+        <small>Габарит товара в упаковке</small>
+        <input type="number" id="widthCm" placeholder="например, 20" step="0.01" />
+      </div>
+
+      <div class="field">
+        <label for="heightCm">Высота, см</label>
+        <small>Габарит товара в упаковке</small>
+        <input type="number" id="heightCm" placeholder="например, 10" step="0.01" />
+      </div>
+
+      <div class="field">
+        <label for="warehouse">Склад отгрузки</label>
+        <small>Поиск и выбор склада, коэффициент влияет на прямую логистику</small>
+        <input
+          type="text"
+          id="warehouseSearch"
+          class="warehouse-search"
+          placeholder="Поиск по складам..."
+        />
+        <select id="warehouse"></select>
+      </div>
+
+      <div class="field">
+        <label for="ilValue">ИЛ в день заказа</label>
+        <small>Индекс логистики (IL)</small>
+        <input type="number" id="ilValue" placeholder="например, 1" step="0.01" />
+      </div>
+
+      <div class="field">
+        <label for="irpValue">ИРП в день заказа</label>
+        <small>Индекс расчёта по цене (IRP)</small>
+        <input type="number" id="irpValue" placeholder="например, 0.02" step="0.0001" />
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 2. Цена, комиссии, налоги и прочие расходы -->
+    <h3>2. Цена, комиссии, налоги и прочие расходы</h3>
+    <div class="grid">
+      <div class="field">
+        <label for="price">Цена продажи на маркетплейсе (P)</label>
+        <small>Розничная цена, которую видит покупатель</small>
+        <input type="number" id="price" placeholder="например, 1500" step="0.01" />
+      </div>
+
+      <div class="field">
+        <label for="purchase">Закупочная цена (C_purchase)</label>
+        <small>Себестоимость 1 единицы товара</small>
+        <input type="number" id="purchase" placeholder="например, 500" step="0.01" />
+      </div>
+
+      <div class="field">
+        <label for="categorySelect">Категория товара</label>
+        <small>Выберите категорию, чтобы автоматически подставить процент комиссии</small>
+        <select id="categorySelect">
+          <option value="">— Выберите категорию —</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="feePercent">Комиссия маркетплейса, % (fee_percent)</label>
+        <small>Считается от фактической цены реализации</small>
+        <div class="inline-suffix">
+          <input type="number" id="feePercent" placeholder="например, 15" step="0.01" />
+          <span>%</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="sppPercent">Скидка / СПП, % (spp_percent)</label>
+        <small>Сколько процентов скидки падает с цены P</small>
+        <div class="inline-suffix">
+          <input type="number" id="sppPercent" placeholder="например, 10" step="0.01" />
+          <span>%</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="buyoutRate">Процент выкупа, % (buyout_rate)</label>
+        <small>От 0 до 100; например, 80 означает 80% выкупа</small>
+        <div class="inline-suffix">
+          <input type="number" id="buyoutRate" placeholder="например, 80" step="0.01" />
+          <span>%</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="adsPerSale">Рекламные расходы на одну выкупленную продажу (ads_per_sale)</label>
+        <small>Средний расход на рекламу для одной продажи</small>
+        <input type="number" id="adsPerSale" placeholder="например, 100" step="0.01" />
+      </div>
+
+      <div class="field">
+        <label for="otherCosts">Прочие переменные расходы на 1 выкуп (other_costs)</label>
+        <small>Упаковка, доп. комиссии, платные услуги и т.п.</small>
+        <input type="number" id="otherCosts" placeholder="например, 30" step="0.01" />
+      </div>
+
+      <div class="field">
+        <label for="taxPercent">Налог, %</label>
+        <small>Например, УСН 6% от прибыли</small>
+        <div class="inline-suffix">
+          <input type="number" id="taxPercent" placeholder="например, 6" step="0.01" />
+          <span>%</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="acquiringPercent">Эквайринг, %</label>
+        <small>Процент от фактической цены реализации</small>
+        <div class="inline-suffix">
+          <input type="number" id="acquiringPercent" placeholder="например, 1.5" step="0.01" />
+          <span>%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 3. Целевая маржа -->
+    <h3>3. Целевая маржа</h3>
+    <div class="grid">
+      <div class="field">
+        <label for="targetMargin">Целевая маржа, %</label>
+        <small>Используется для расчёта минимальной цены</small>
+        <div class="inline-suffix">
+          <input type="number" id="targetMargin" placeholder="например, 20" step="0.01" />
+          <span>%</span>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="calculate()">Рассчитать</button>
+    <button class="secondary" onclick="resetForm()">Сбросить</button>
+    <button class="secondary" onclick="saveToTable()">Сохранить в таблицу</button>
+    <button class="secondary" onclick="exportToCSV()">Экспорт в CSV</button>
+
+    <div class="results" id="results" style="display:none;">
+      <h2>Результаты</h2>
+      <div class="result-line">
+        Объём товара: <span class="value" id="volumeValue"></span> л
+      </div>
+      <div class="result-line">
+        Фактическая цена реализации с учётом скидки/СПП (P_real): 
+        <span class="value" id="pRealValue"></span> ₽
+      </div>
+      <div class="result-line">
+        Комиссия маркетплейса (C_fee): 
+        <span class="value" id="feeValue"></span> ₽
+      </div>
+      <div class="result-line">
+        Эквайринг (C_acq): 
+        <span class="value" id="acqValue"></span> ₽
+      </div>
+      <div class="result-line">
+        Налог (C_tax, по текущей прибыли): 
+        <span class="value" id="taxValue"></span> ₽
+      </div>
+      <div class="result-line">
+        Логистика туда за 1 отправку (C_ship_to): 
+        <span class="value" id="shipToValue"></span> ₽
+      </div>
+      <div class="result-line">
+        Логистика возврата за 1 штуку (C_ship_back): 
+        <span class="value" id="shipBackValue"></span> ₽
+      </div>
+      <div class="result-line">
+        Средняя логистика на 1 выкупленную единицу (C_logistics_per_unit): 
+        <span class="value" id="logisticsValue"></span> ₽
+      </div>
+      <div class="result-line">
+        Полные переменные затраты на 1 выкупленную единицу (C_total): 
+        <span class="value" id="totalCostValue"></span> ₽
+      </div>
+      <div class="result-line">
+        Прибыль на 1 выкупленную единицу (Profit_per_unit): 
+        <span class="value" id="profitValue"></span> ₽
+      </div>
+      <div class="result-line">
+        Маржа: 
+        <span class="value" id="marginValue"></span> %
+      </div>
+      <div class="result-line">
+        Минимальная цена при целевой марже (P_min): 
+        <span class="value" id="minPriceValue"></span> ₽
+      </div>
+
+      <div class="status" id="statusBox"></div>
+    </div>
+
+    <div id="tableSection" style="margin-top: 20px; display:none;">
+      <h3>Сохранённые расчёты</h3>
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>Товар</th>
+            <th>Цена, ₽</th>
+            <th>Комиссия, ₽</th>
+            <th>Логистика с выкупом, ₽</th>
+            <th>Реклама, ₽</th>
+            <th>Прочие, ₽</th>
+            <th>Себестоимость, ₽</th>
+            <th>Эквайринг, ₽</th>
+            <th>Налог, ₽</th>
+            <th>Прибыль, ₽</th>
+            <th>Маржа, %</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let lastCalculation = null;
+
+    // Категории и комиссии
+    const categories = [
+      { name: 'Вибропоглощающий материал для авто', fee: 26.5 },
+      { name: 'Системы подогрева двигателя', fee: 26.0 },
+      { name: 'Контейнеры садовые', fee: 29.5 },
+      { name: 'Напитки кофейные', fee: 21.5 },
+      { name: 'Сундучки свадебные', fee: 32.5 },
+      { name: 'Поролон', fee: 28.0 },
+      { name: 'Ножи раскройные', fee: 29.5 },
+      { name: 'Пленки антидождь', fee: 26.5 },
+      { name: 'Напитки растительные', fee: 21.5 },
+      { name: 'Кахоны', fee: 28.5 },
+      { name: 'Секундомеры', fee: 27.5 },
+      { name: 'Балки продольные', fee: 26.5 },
+      { name: 'Яйцерезки', fee: 29.5 },
+      { name: 'Килты банные', fee: 34.5 },
+      { name: 'Карнавальные маски', fee: 32.5 },
+      { name: 'Фиксаторы спортивного инвентаря', fee: 27.5 },
+      { name: 'Тренажеры реабилитационные', fee: 32.5 },
+      { name: 'Роботы-стеклоочистители', fee: 25.5 },
+      { name: 'Кастрюли', fee: 29.5 },
+      { name: 'Нити кулинарные', fee: 24.5 },
+      { name: 'Умные розетки', fee: 24.5 },
+      { name: 'Замки цепи', fee: 24.5 },
+      { name: 'Средства для удаления обоев', fee: 28.5 },
+      { name: 'Настольные игры эротик', fee: 29.5 },
+      { name: 'Карнавальные головные уборы', fee: 32.5 },
+      { name: 'Конвертеры спутниковые', fee: 29.5 },
+      { name: 'Песок строительный', fee: 20.5 },
+      { name: 'Ремни для фиксации', fee: 32.5 },
+      { name: 'Оверлоки', fee: 25.5 },
+      { name: 'Ручки коробки передач', fee: 26.5 },
+      { name: 'Разъемы', fee: 23.5 },
+      { name: 'Запчасти для батутов', fee: 27.5 },
+      { name: 'Свитеры', fee: 34.5 },
+      { name: 'Конусы спортивные', fee: 27.5 },
+      { name: 'Круги противопролежневые', fee: 25.5 },
+      { name: 'Глиттеры', fee: 32.5 },
+      { name: 'Кресла детские', fee: 26.5 },
+      { name: 'Свечи зажигания', fee: 26.5 },
+      { name: 'Сани тренировочные', fee: 22.5 },
+      { name: 'Держатели для пайки', fee: 31.5 },
+      { name: 'Ювелирные шнурки', fee: 33.0 },
+      { name: 'Маслины', fee: 21.5 },
+      { name: 'Зеркала для магазина', fee: 26.5 },
+      { name: 'Иглы инъекционные', fee: 32.0 },
+      { name: 'Программы питания', fee: 21.5 },
+      { name: 'Хумус', fee: 21.5 },
+      { name: 'Сифоны', fee: 27.5 },
+      { name: 'Парты детские', fee: 26.5 },
+      { name: 'Костюмы для животных', fee: 21.5 },
+      { name: 'Съемники хомутов', fee: 31.5 },
+      { name: 'Кольца для похудения', fee: 25.0 },
+      { name: 'Воски для брекетов', fee: 27.5 },
+      { name: 'Наборы для приготовления шоколада', fee: 21.5 },
+      { name: 'Дымоходы', fee: 27.5 },
+      { name: 'Менажницы', fee: 29.5 },
+      { name: 'Врезки вентиляционные', fee: 27.5 },
+      { name: 'Котлы отопления', fee: 25.5 },
+      { name: 'Составляющие рулевых тяг', fee: 21.5 },
+      { name: 'Анкеры', fee: 28.5 },
+      { name: 'Двигатели для садовой техники', fee: 19.5 },
+      { name: 'Клей для слаймов', fee: 29.5 },
+      { name: 'Рукомойники', fee: 28.5 },
+      { name: 'Ковши', fee: 29.5 },
+      { name: 'Косухи', fee: 34.5 },
+      { name: 'Штаны для животных', fee: 21.5 },
+      { name: 'Защита для клип-кордов', fee: 31.5 },
+      { name: 'Кэроб', fee: 21.5 },
+      { name: 'Аксессуары для детских горшков', fee: 21.5 },
+      { name: 'Замороженные фрукты', fee: 16.5 },
+      { name: 'Матрасы для санок', fee: 29.5 },
+      { name: 'Грипсы', fee: 27.5 },
+      { name: 'Аппараты для запаивания пакетов', fee: 24.5 },
+      { name: 'Румяна', fee: 32.5 },
+      { name: 'Ниппели для спиц', fee: 27.5 },
+      { name: 'Заготовки ключей', fee: 28.5 },
+      { name: 'Спортивное питание и косметика', fee: 25.5 },
+      { name: 'Клапаны для слива воды', fee: 26.5 },
+      { name: 'Контурные карты', fee: 24.5 },
+      { name: 'Замороженная рыба', fee: 16.5 },
+      { name: 'Супы детские', fee: 20.5 },
+      { name: 'Переходы вентиляционные', fee: 27.5 },
+      { name: 'Шары для бильярда', fee: 27.5 },
+      { name: 'Ролики для пресса', fee: 27.5 },
+      { name: 'Смазки для электроинструмента', fee: 31.5 }
+      // дальше по тому же принципу можно дописать остальные позиции
+    ];
+
+    const warehouses = [
+      { name: 'СЦ Оренбург Центральная', coef: 1.95 },
+      { name: 'СЦ Череповец', coef: 1.50 },
+      { name: 'СЦ Актобе', coef: 1.45 },
+      { name: 'Коледино', coef: 2.05 },
+      { name: 'Голицыно СГТ', coef: 0.75 },
+      { name: 'СЦ Софьино', coef: 1.60 },
+      { name: 'СЦ Сабурово', coef: 1.30 },
+      { name: 'Астана 2', coef: 1.45 },
+      { name: 'СЦ Киров', coef: 1.85 },
+      { name: 'СЦ Астрахань (Солянка)', coef: 1.55 },
+      { name: 'СЦ Симферополь Молодежненское', coef: 1.45 },
+      { name: 'Щербинка: Горючее', coef: 2.00 },
+      { name: 'СЦ Архангельск (ул Ленина)', coef: 1.80 },
+      { name: 'СЦ Ярославль Громова', coef: 1.60 },
+      { name: 'СЦ Барнаул', coef: 2.20 },
+      { name: 'Волгоград: Питание', coef: 1.15 },
+      { name: 'СЦ Ереван', coef: 1.55 },
+      { name: 'Воронеж: Питание', coef: 1.60 },
+      { name: 'Казань: Питание', coef: 2.20 },
+      { name: 'СЦ Кузнецк', coef: 1.70 },
+      { name: 'Новосемейкино: Питание', coef: 1.75 },
+      { name: 'Екатеринбург - Испытателей 14г', coef: 2.25 },
+      { name: 'Краснодар (Тихорецкая): Питание', coef: 1.75 },
+      { name: 'Котовск: Питание', coef: 1.20 },
+      { name: 'Сарапул', coef: 1.70 },
+      { name: 'Шушары: Питание', coef: 2.20 },
+      { name: 'Екатеринбург (Перспективная): Питание', coef: 1.90 },
+      { name: 'Волгоград', coef: 1.25 },
+      { name: 'Склад Шушары', coef: 2.20 },
+      { name: 'Владимир Воршинское', coef: 1.30 },
+      { name: 'Санкт-Петербург (Уткина Заводь)', coef: 3.00 },
+      { name: 'Санкт-Петербург СГТ', coef: 1.05 },
+      { name: 'Пенза', coef: 1.20 },
+      { name: 'СЦ Пятигорск (Этока)', coef: 1.35 },
+      { name: 'Котовск', coef: 1.20 },
+      { name: 'Воронеж', coef: 1.20 },
+      { name: 'Софьино СГТ', coef: 0.95 },
+      { name: 'Новосемейкино', coef: 1.60 },
+      { name: 'Софрино СГТ', coef: 0.95 },
+      { name: 'СЦ Шымкент Асар', coef: 1.45 },
+      { name: 'Рязань (Тюшевское)', coef: 1.25 },
+      { name: 'СЦ Смоленск 3', coef: 1.60 },
+      { name: 'СЦ Абакан 2', coef: 2.00 },
+      { name: 'Екатеринбург - Перспективная 14', coef: 1.90 },
+      { name: 'СЦ Вологда 2', coef: 1.85 },
+      { name: 'Радумля СГТ', coef: 0.95 },
+      { name: 'СЦ Нижний Новгород Ларина', coef: 1.50 },
+      { name: 'СЦ Калуга', coef: 1.70 },
+      { name: 'Электросталь: Питание', coef: 1.75 },
+      { name: 'Алматы Атакент', coef: 1.45 },
+      { name: 'Склад Ереван', coef: 1.10 },
+      { name: 'Рязань (Тюшевское): Питание', coef: 1.40 },
+      { name: 'СЦ Чебоксары 2', coef: 1.70 },
+      { name: 'СЦ Шымкент', coef: 1.15 },
+      { name: 'СЦ Чита 2', coef: 1.30 },
+      { name: 'СЦ Ижевск', coef: 1.60 },
+      { name: 'Подольск', coef: 2.05 },
+      { name: 'СЦ Ростов-на-Дону', coef: 1.75 },
+      { name: 'Подольск 3 СГТ', coef: 1.00 },
+      { name: 'СЦ Челябинск 2', coef: 1.80 },
+      { name: 'Казань СГТ', coef: 1.00 },
+      { name: 'СЦ Тюмень', coef: 1.90 },
+      { name: 'СЦ Байсерке', coef: 1.35 },
+      { name: 'СЦ Брянск 2', coef: 1.55 },
+      { name: 'СЦ Астрахань', coef: 1.60 },
+      { name: 'СЦ Тамбов', coef: 1.30 },
+      { name: 'СЦ Кемерово', coef: 1.60 },
+      { name: 'СЦ Пермь 2', coef: 1.65 },
+      { name: 'Казань', coef: 2.25 },
+      { name: 'СЦ Новосибирск Пасечная', coef: 3.50 },
+      { name: 'Белые Столбы', coef: 2.80 },
+      { name: 'Чехов 2, Новоселки вл 11 стр 7', coef: 2.05 },
+      { name: 'СЦ Пушкино', coef: 1.50 },
+      { name: 'Электросталь', coef: 1.80 },
+      { name: 'СЦ Минск', coef: 1.95 },
+      { name: 'СЦ Липецк', coef: 1.60 },
+      { name: 'СЦ Нижний Тагил', coef: 2.10 },
+      { name: 'СЦ Белая Дача', coef: 2.05 },
+      { name: 'СЦ Воронеж', coef: 1.75 },
+      { name: 'СЦ Курск', coef: 1.60 },
+      { name: 'Краснодар (Тихорецкая)', coef: 1.75 },
+      { name: 'СЦ Белогорск', coef: 1.60 },
+      { name: 'СЦ Томск', coef: 2.00 },
+      { name: 'СЦ Внуково', coef: 1.75 },
+      { name: 'СЦ Крыловская', coef: 1.40 },
+      { name: 'СЦ Владикавказ', coef: 1.30 },
+      { name: 'Чехов 1, Новоселки вл 11 стр 2', coef: 2.05 },
+      { name: 'СЦ Сыктывкар', coef: 2.00 },
+      { name: 'СЦ Иркутск', coef: 1.70 },
+      { name: 'СЦ Псков', coef: 1.80 },
+      { name: 'Невинномысск', coef: 1.15 },
+      { name: 'СЦ Уфа', coef: 2.10 },
+      { name: 'СЦ Омск', coef: 1.60 },
+      { name: 'СЦ Новокузнецк', coef: 1.80 },
+      { name: 'СЦ Ульяновск', coef: 1.80 },
+      { name: 'СЦ Мурманск', coef: 1.65 },
+      { name: 'Тула', coef: 1.60 }
+    ];
+
+    let filteredWarehouses = [...warehouses];
+
+    function initWarehouses() {
+      renderWarehouseOptions();
+      const searchInput = document.getElementById('warehouseSearch');
+      searchInput.addEventListener('input', onWarehouseSearch);
+    }
+
+    function renderWarehouseOptions() {
+      const select = document.getElementById('warehouse');
+      select.innerHTML = '';
+      filteredWarehouses.forEach((w, index) => {
+        const option = document.createElement('option');
+        option.value = w.coef.toString();
+        option.textContent = w.name + ' (' + (w.coef * 100).toFixed(0) + '%)';
+        if (index === 0) option.selected = true;
+        select.appendChild(option);
+      });
+    }
+
+    function onWarehouseSearch(e) {
+      const query = e.target.value.toLowerCase();
+      if (!query) {
+        filteredWarehouses = [...warehouses];
+      } else {
+        filteredWarehouses = warehouses.filter(w =>
+          w.name.toLowerCase().includes(query)
+        );
+      }
+      renderWarehouseOptions();
+    }
+
+    function initCategories() {
+      const select = document.getElementById('categorySelect');
+      if (!select) return;
+
+      categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.fee.toString();
+        option.textContent = cat.name + ' (' + cat.fee.toFixed(2) + '%)';
+        select.appendChild(option);
+      });
+
+      select.addEventListener('change', () => {
+        const feePercentInput = document.getElementById('feePercent');
+        const val = select.value;
+        if (val && feePercentInput) {
+          feePercentInput.value = parseFloat(val).toString().replace('.', ',');
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initWarehouses();
+      initCategories();
+    });
+
+    function toNumber(value) {
+      const n = parseFloat((value || '').toString().replace(',', '.'));
+      return isNaN(n) ? 0 : n;
+    }
+
+    function getTariffPerLiter(V_l) {
+      if (V_l <= 0) return 0;
+      if (V_l <= 0.200) return 23;
+      if (V_l <= 0.400) return 26;
+      if (V_l <= 0.600) return 29;
+      if (V_l <= 0.800) return 30;
+      if (V_l <= 1.000) return 32;
+      return null;
+    }
+
+    function calculate() {
+      const lengthCm = toNumber(document.getElementById('lengthCm').value);
+      const widthCm = toNumber(document.getElementById('widthCm').value);
+      const heightCm = toNumber(document.getElementById('heightCm').value);
+      const warehouseCoef = toNumber(document.getElementById('warehouse').value);
+      const ilValue = toNumber(document.getElementById('ilValue').value);
+      const irpValue = toNumber(document.getElementById('irpValue').value);
+
+      const P = toNumber(document.getElementById('price').value);
+      const C_purchase = toNumber(document.getElementById('purchase').value);
+      const fee_percent = toNumber(document.getElementById('feePercent').value);
+      const spp_percent = toNumber(document.getElementById('sppPercent').value);
+      const buyout_rate_percent = toNumber(document.getElementById('buyoutRate').value);
+      const ads_per_sale = toNumber(document.getElementById('adsPerSale').value);
+      const other_costs = toNumber(document.getElementById('otherCosts').value);
+      const tax_percent = toNumber(document.getElementById('taxPercent').value);
+      const acquiring_percent = toNumber(document.getElementById('acquiringPercent').value);
+      const target_margin_percent = toNumber(document.getElementById('targetMargin').value);
+
+      if (P <= 0) {
+        alert('Введите корректную цену продажи (P > 0).');
+        return;
+      }
+
+      let volume_l = 0;
+      if (lengthCm > 0 && widthCm > 0 && heightCm > 0) {
+        const volume_m3 = (lengthCm / 100) * (widthCm / 100) * (heightCm / 100);
+        volume_l = volume_m3 * 1000;
+      }
+
+      let C_ship_to = 0;
+      if (volume_l > 0) {
+        const tariffPerL = getTariffPerLiter(volume_l);
+        let C_fwd_base;
+        if (tariffPerL === null) {
+          if (volume_l <= 1) {
+            C_fwd_base = 46;
+          } else {
+            C_fwd_base = 46 + 14 * (volume_l - 1);
+          }
+        } else {
+          C_fwd_base = volume_l * tariffPerL;
+        }
+        C_ship_to = C_fwd_base * warehouseCoef * ilValue + P * irpValue;
+      }
+
+      let C_ship_back = 0;
+      if (volume_l > 0) {
+        if (volume_l <= 1) {
+          C_ship_back = 46;
+        } else {
+          C_ship_back = 46 + 14 * (volume_l - 1);
+        }
+      }
+
+      const buyout_rate = Math.min(Math.max(buyout_rate_percent, 0), 100) / 100;
+
+      const P_real = P * (1 - spp_percent / 100);
+      const C_fee = P_real * (fee_percent / 100);
+      const C_acq = P_real * (acquiring_percent / 100);
+
+      let C_logistics_per_unit;
+      if (buyout_rate > 0) {
+        C_logistics_per_unit =
+          C_ship_to / buyout_rate +
+          (C_ship_back * (1 - buyout_rate)) / buyout_rate;
+      } else {
+        C_logistics_per_unit = C_ship_to + C_ship_back;
+      }
+
+      const C_base_before_tax =
+        C_purchase +
+        C_logistics_per_unit +
+        C_fee +
+        C_acq +
+        ads_per_sale +
+        other_costs;
+
+      let Profit_before_tax = P_real - C_base_before_tax;
+      let C_tax = 0;
+      if (Profit_before_tax > 0 && tax_percent > 0) {
+        C_tax = Profit_before_tax * (tax_percent / 100);
+      }
+
+      const C_total = C_base_before_tax + C_tax;
+      const Profit_per_unit = P_real - C_total;
+      const Margin_percent =
+        P_real > 0 ? (Profit_per_unit / P_real) * 100 : 0;
+
+      // Расчёт минимальной цены при целевой марже (без учёта налога в формуле)
+      let P_min = 0;
+      if (target_margin_percent > 0 && target_margin_percent < 100) {
+        const M = target_margin_percent / 100;
+        const k = fee_percent / 100 + acquiring_percent / 100;
+        const C_base_for_min =
+          C_purchase + C_logistics_per_unit + ads_per_sale + other_costs;
+        const denominator = 1 - k - M;
+        if (denominator > 0) {
+          const P_real_min = C_base_for_min / denominator;
+          const sppFactor = 1 - spp_percent / 100;
+          if (sppFactor > 0) {
+            P_min = P_real_min / sppFactor;
+          }
+        }
+      }
+
+      document.getElementById('volumeValue').textContent =
+        volume_l.toFixed(3);
+      document.getElementById('pRealValue').textContent =
+        P_real.toFixed(2);
+      document.getElementById('feeValue').textContent =
+        C_fee.toFixed(2);
+      document.getElementById('acqValue').textContent =
+        C_acq.toFixed(2);
+      document.getElementById('taxValue').textContent =
+        C_tax.toFixed(2);
+      document.getElementById('shipToValue').textContent =
+        C_ship_to.toFixed(2);
+      document.getElementById('shipBackValue').textContent =
+        C_ship_back.toFixed(2);
+      document.getElementById('logisticsValue').textContent =
+        C_logistics_per_unit.toFixed(2);
+      document.getElementById('totalCostValue').textContent =
+        C_total.toFixed(2);
+      document.getElementById('profitValue').textContent =
+        Profit_per_unit.toFixed(2);
+      document.getElementById('marginValue').textContent =
+        Margin_percent.toFixed(2);
+      document.getElementById('minPriceValue').textContent =
+        P_min > 0 ? P_min.toFixed(2) : '—';
+
+      const statusBox = document.getElementById('statusBox');
+      statusBox.classList.remove('good', 'bad', 'neutral');
+
+      const eps = 0.01;
+      if (Profit_per_unit > eps) {
+        statusBox.classList.add('good');
+        statusBox.textContent =
+          'Комментарий: юнит‑экономика прибыльная. Товар приносит прибыль с одной выкупленной единицы.';
+      } else if (Profit_per_unit < -eps) {
+        statusBox.classList.add('bad');
+        statusBox.textContent =
+          'Комментарий: юнит‑экономика убыточная. При текущих условиях товар теряет деньги на каждой выкупленной единицы.';
+      } else {
+        statusBox.classList.add('neutral');
+        statusBox.textContent =
+          'Комментарий: юнит‑экономика около нуля. Любое увеличение затраты или снижение цены может сделать товар убыточным.';
+      }
+
+      document.getElementById('results').style.display = 'block';
+
+      lastCalculation = {
+        productName: document.getElementById('productName').value || 'Без названия',
+        price: P,
+        fee: C_fee,
+        logistics_per_unit: C_logistics_per_unit,
+        ads: ads_per_sale,
+        other: other_costs,
+        purchase: C_purchase,
+        acquiring: C_acq,
+        tax: C_tax,
+        profit: Profit_per_unit,
+        margin: Margin_percent
+      };
+    }
+
+    function resetForm() {
+      const ids = [
+        'productName',
+        'lengthCm',
+        'widthCm',
+        'heightCm',
+        'price',
+        'purchase',
+        'feePercent',
+        'sppPercent',
+        'buyoutRate',
+        'adsPerSale',
+        'otherCosts',
+        'ilValue',
+        'irpValue',
+        'warehouseSearch',
+        'taxPercent',
+        'acquiringPercent',
+        'targetMargin'
+      ];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+
+      const catSelect = document.getElementById('categorySelect');
+      if (catSelect) catSelect.value = '';
+
+      filteredWarehouses = [...warehouses];
+      renderWarehouseOptions();
+
+      document.getElementById('results').style.display = 'none';
+      lastCalculation = null;
+    }
+
+    function saveToTable() {
+      if (!lastCalculation) {
+        alert('Сначала выполните расчёт, затем сохраните результат.');
+        return;
+      }
+
+      const tableSection = document.getElementById('tableSection');
+      const tbody = document.querySelector('#resultsTable tbody');
+
+      const row = document.createElement('tr');
+
+      const nameCell = document.createElement('td');
+      nameCell.textContent = lastCalculation.productName;
+
+      const priceCell = document.createElement('td');
+      priceCell.textContent = lastCalculation.price.toFixed(2);
+
+      const feeCell = document.createElement('td');
+      feeCell.textContent = lastCalculation.fee.toFixed(2);
+
+      const logCell = document.createElement('td');
+      logCell.textContent = lastCalculation.logistics_per_unit.toFixed(2);
+
+      const adsCell = document.createElement('td');
+      adsCell.textContent = lastCalculation.ads.toFixed(2);
+
+      const otherCell = document.createElement('td');
+      otherCell.textContent = lastCalculation.other.toFixed(2);
+
+      const purchaseCell = document.createElement('td');
+      purchaseCell.textContent = lastCalculation.purchase.toFixed(2);
+
+      const acqCell = document.createElement('td');
+      acqCell.textContent = lastCalculation.acquiring.toFixed(2);
+
+      const taxCell = document.createElement('td');
+      taxCell.textContent = lastCalculation.tax.toFixed(2);
+
+      const profitCell = document.createElement('td');
+      profitCell.textContent = lastCalculation.profit.toFixed(2);
+
+      const marginCell = document.createElement('td');
+      marginCell.textContent = lastCalculation.margin.toFixed(2);
+
+      row.appendChild(nameCell);
+      row.appendChild(priceCell);
+      row.appendChild(feeCell);
+      row.appendChild(logCell);
+      row.appendChild(adsCell);
+      row.appendChild(otherCell);
+      row.appendChild(purchaseCell);
+      row.appendChild(acqCell);
+      row.appendChild(taxCell);
+      row.appendChild(profitCell);
+      row.appendChild(marginCell);
+
+      tbody.appendChild(row);
+      tableSection.style.display = 'block';
+    }
+
+    function exportToCSV() {
+      const table = document.getElementById('resultsTable');
+      const tbody = table.querySelector('tbody');
+      if (!tbody || tbody.rows.length === 0) {
+        alert('Нет сохранённых строк для экспорта.');
+        return;
+      }
+
+      let csvContent = '';
+      const headers = [];
+      table.querySelectorAll('thead th').forEach(th => {
+        const text = '"' + th.textContent.replace(/"/g, '""') + '"';
+        headers.push(text);
+      });
+      csvContent += headers.join(';') + '\n';
+
+      Array.from(tbody.rows).forEach(row => {
+        const cells = [];
+        Array.from(row.cells).forEach(td => {
+          const text = '"' + td.textContent.replace(/"/g, '""') + '"';
+          cells.push(text);
+        });
+        csvContent += cells.join(';') + '\n';
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const now = new Date();
+      const stamp =
+        now.getFullYear().toString() +
+        ('0' + (now.getMonth() + 1)).slice(-2) +
+        ('0' + now.getDate()).slice(-2) +
+        '_' +
+        ('0' + now.getHours()).slice(-2) +
+        ('0' + now.getMinutes()).slice(-2);
+      a.download = 'unit_economics_' + stamp + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
