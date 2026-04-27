@@ -595,12 +595,19 @@
 
       select.addEventListener('change', () => {
         const feePercentInput = document.getElementById('feePercent');
-        const val = select.value;
-        if (val && feePercentInput) {
-          feePercentInput.value = parseFloat(val).toString().replace('.', ',');
-          if (hasAnyMainInputsFilled()) {
-            calculate();
-          }
+        const selectedName = select.value;
+        if (!selectedName || !feePercentInput) return;
+
+        const cat = categories.find(c => c.name === selectedName);
+        if (!cat || typeof cat.fee === 'undefined') return;
+
+        const feeVal = Number(cat.fee);
+        if (isNaN(feeVal)) return;
+
+        feePercentInput.value = feeVal.toString().replace('.', ',');
+
+        if (hasAnyMainInputsFilled()) {
+          calculate();
         }
       });
     }
@@ -609,12 +616,16 @@
       const select = document.getElementById('categorySelect');
       if (!select) return;
 
+      const current = select.value || '';
       select.innerHTML = '<option value="">— Выберите категорию —</option>';
 
       filteredCategories.forEach(cat => {
         const option = document.createElement('option');
-        option.value = cat.fee.toString();
-        option.textContent = cat.name;
+        option.value = cat.name;       // ключ — имя категории
+        option.textContent = cat.name; // подпись
+        if (cat.name === current) {
+          option.selected = true;
+        }
         select.appendChild(option);
       });
     }
@@ -678,7 +689,7 @@
       const ilValue = toNumber(document.getElementById('ilValue').value);
       const irpValue = toNumber(document.getElementById('irpValue').value);
 
-      const P = toNumber(document.getElementById('price').value); // цена до СПП
+      const P = toNumber(document.getElementById('price').value);
       const C_purchase = toNumber(document.getElementById('purchase').value);
       const fee_percent = toNumber(document.getElementById('feePercent').value);
       const spp_percent = toNumber(document.getElementById('sppPercent').value);
@@ -695,7 +706,7 @@
       }
 
       const P_for_buyer = P * (1 - spp_percent / 100);
-      const ads_per_sale = P * (ads_percent / 100); // ДРР в рублях
+      const ads_per_sale = P * (ads_percent / 100);
 
       let volume_l = 0;
       if (lengthCm > 0 && widthCm > 0 && heightCm > 0) {
