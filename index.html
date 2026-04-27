@@ -815,7 +815,10 @@
       </div>
     </div>
   </div>
-
+<div id="debug" style="margin-top:16px;font-size:12px;color:#111;">
+  <div id="debugCategoriesInfo"></div>
+  <pre id="debugCategoriesSample" style="white-space:pre-wrap;"></pre>
+</div>
   <script>
     let lastCalculation = null;
 
@@ -1247,22 +1250,28 @@
               return response.json();
             })
             .then(data => {
-              if (Array.isArray(data)) {
-                categories = data;
-              } else if (Array.isArray(data.data)) {
-                categories = data.data;
-              } else if (Array.isArray(data.categories)) {
-                categories = data.categories;
-              } else {
-                console.error('Не удалось найти массив категорий в JSON:', data);
-                categories = [];
-              }
+  if (Array.isArray(data)) {
+    categories = data;
+  } else if (Array.isArray(data.data)) {
+    categories = data.data;
+  } else if (Array.isArray(data.categories)) {
+    categories = data.categories;
+  } else {
+    console.error('Не удалось найти массив категорий в JSON:', data);
+    categories = [];
+  }
 
-              console.log('CATEGORIES LOADED:', categories);
+  // Диагностика на самой странице
+  const infoEl = document.getElementById('debugCategoriesInfo');
+  const sampleEl = document.getElementById('debugCategoriesSample');
+  if (infoEl && sampleEl) {
+    infoEl.textContent = 'Всего категорий: ' + categories.length;
+    sampleEl.textContent = 'Первые 3 объекта:\n' + JSON.stringify(categories.slice(0, 3), null, 2);
+  }
 
-              initCategories();
-              initParentCategories();
-            })
+  initCategories();
+  initParentCategories();
+}) 
             .catch(err => {
               console.error('Ошибка загрузки categories.json:', err);
               if (categoriesStatus) {
