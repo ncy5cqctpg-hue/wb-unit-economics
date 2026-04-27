@@ -22,7 +22,7 @@
       margin: 0 auto;
       background: #fff;
       border-radius: 12px;
-      padding: 18px 20px 22px;
+      padding: 16px 18px 20px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     }
 
@@ -35,11 +35,11 @@
     .subtitle {
       font-size: 14px;
       color: #555;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     h3 {
-      margin-top: 18px;
+      margin-top: 16px;
       margin-bottom: 8px;
       font-size: 15px;
     }
@@ -48,12 +48,13 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 12px 18px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .field {
       display: flex;
       flex-direction: column;
+      min-width: 0;
     }
 
     .field label {
@@ -77,6 +78,7 @@
       outline: none;
       transition: border-color 0.15s;
       background: #fff;
+      width: 100%;
     }
 
     .field input:focus,
@@ -93,16 +95,18 @@
     .inline-suffix span {
       font-size: 12px;
       color: #555;
+      white-space: nowrap;
     }
 
     .inline-group {
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
       align-items: flex-end;
     }
 
     .inline-group .field {
-      flex: 1;
+      flex: 1 1 240px;
     }
 
     button {
@@ -113,7 +117,7 @@
       color: #fff;
       font-size: 13px;
       cursor: pointer;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       margin-right: 8px;
     }
 
@@ -132,7 +136,7 @@
 
     .results {
       border-top: 1px solid #e3e6f0;
-      padding-top: 14px;
+      padding-top: 12px;
       margin-top: 8px;
     }
 
@@ -177,14 +181,10 @@
 
     @media (max-width: 480px) {
       .container {
-        padding: 14px 12px 18px;
+        padding: 12px 10px 16px;
       }
       h1 {
         font-size: 20px;
-      }
-      .inline-group {
-        flex-direction: column;
-        align-items: stretch;
       }
     }
 
@@ -306,33 +306,35 @@
         <small>Себестоимость 1 единицы товара</small>
         <input type="number" id="purchase" placeholder="например, 500" step="0.01" />
       </div>
+    </div>
 
-      <div class="inline-group">
-        <div class="field">
-          <label for="categorySearch">Категория товара</label>
-          <small>Поиск и выбор категории</small>
-          <input
-            type="text"
-            id="categorySearch"
-            class="warehouse-search"
-            placeholder="Поиск по категориям..."
-          />
-          <select id="categorySelect">
-            <option value="">— Выберите категорию —</option>
-          </select>
-          <div class="categories-status" id="categoriesStatus"></div>
-        </div>
-
-        <div class="field">
-          <label for="feePercent">Комиссия маркетплейса, %</label>
-          <small>Подставляется из категории, можно изменить вручную</small>
-          <div class="inline-suffix">
-            <input type="number" id="feePercent" placeholder="например, 15" step="0.01" />
-            <span>%</span>
-          </div>
-        </div>
+    <div class="grid">
+      <div class="field">
+        <label for="categorySearch">Категория товара</label>
+        <small>Поиск и выбор категории</small>
+        <input
+          type="text"
+          id="categorySearch"
+          class="warehouse-search"
+          placeholder="Поиск по категориям..."
+        />
+        <select id="categorySelect">
+          <option value="">— Выберите категорию —</option>
+        </select>
+        <div class="categories-status" id="categoriesStatus"></div>
       </div>
 
+      <div class="field">
+        <label for="feePercent">Комиссия маркетплейса, %</label>
+        <small>Подставляется из категории, можно изменить вручную</small>
+        <div class="inline-suffix">
+          <input type="number" id="feePercent" placeholder="например, 15" step="0.01" />
+          <span>%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
       <div class="field">
         <label for="sppPercent">СПП / скидка, %</label>
         <small>Для наглядности; не влияет на расчёт комиссии</small>
@@ -461,7 +463,7 @@
       <div class="status" id="statusBox"></div>
     </div>
 
-    <div id="tableSection" style="margin-top: 16px; display:none;">
+    <div id="tableSection" style="margin-top: 14px; display:none;">
       <h3>Сохранённые расчёты</h3>
       <table id="resultsTable">
         <thead>
@@ -595,10 +597,11 @@
 
       select.addEventListener('change', () => {
         const feePercentInput = document.getElementById('feePercent');
-        const selectedName = select.value;
-        if (!selectedName || !feePercentInput) return;
+        const idxStr = select.value;
+        if (!idxStr || !feePercentInput) return;
 
-        const cat = categories.find(c => c.name === selectedName);
+        const idx = parseInt(idxStr, 10);
+        const cat = filteredCategories[idx];
         if (!cat || typeof cat.fee === 'undefined') return;
 
         const feeVal = Number(cat.fee);
@@ -616,16 +619,12 @@
       const select = document.getElementById('categorySelect');
       if (!select) return;
 
-      const current = select.value || '';
       select.innerHTML = '<option value="">— Выберите категорию —</option>';
 
-      filteredCategories.forEach(cat => {
+      filteredCategories.forEach((cat, index) => {
         const option = document.createElement('option');
-        option.value = cat.name;       // ключ — имя категории
-        option.textContent = cat.name; // подпись
-        if (cat.name === current) {
-          option.selected = true;
-        }
+        option.value = String(index);  // индекс в filteredCategories
+        option.textContent = cat.name;
         select.appendChild(option);
       });
     }
