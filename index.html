@@ -246,7 +246,7 @@
 
     .results-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 8px 16px;
     }
 
@@ -473,10 +473,10 @@
           <h1>Юнит‑экономика Wildberries</h1>
           <span class="badge-beta">beta</span>
         </div>
-        <div class="subtitle">Калькулятор логистики, комиссии и маржи по действующим правилам WB.</div>
+        <div class="subtitle">Калькулятор логистики, комиссии и маржи WB, актуален на 01.05.2026.</div>
       </div>
       <div class="app-meta">
-        <div>v1.6 · расчёт в браузере, без передачи данных</div>
+        <div>v1.7 · расчёт в браузере, без передачи данных</div>
         <div>Обратная связь: <a href="https://t.me/Denidevil" target="_blank" rel="noopener noreferrer">@Denidevil</a></div>
       </div>
     </header>
@@ -772,13 +772,6 @@
             <div class="results-block">
               <div class="results-grid">
                 <div class="result-item">
-                  <div class="result-item-label">Объём товара</div>
-                  <div class="result-item-value">
-                    <span id="volumeValue"></span> л
-                  </div>
-                </div>
-
-                <div class="result-item">
                   <div class="result-item-label">Цена продажи (до СПП)</div>
                   <div class="result-item-value">
                     <span id="priceBeforeSppValue"></span> ₽
@@ -792,7 +785,6 @@
                   </div>
                 </div>
 
-                <!-- Блок: расходы в рублях -->
                 <div class="result-item">
                   <div class="result-item-label">Комиссия маркетплейса</div>
                   <div class="result-item-value">
@@ -818,24 +810,10 @@
                 </div>
 
                 <div class="result-item">
-                  <div class="result-item-label">Прочие переменные расходы</div>
+                  <div class="result-item-label">Прочие расходы (эквайринг + налог + прочие)</div>
                   <div class="result-item-value">
-                    <span id="otherCostsValue"></span> ₽
-                    (<span id="otherShare"></span>%)
-                  </div>
-                </div>
-
-                <div class="result-item">
-                  <div class="result-item-label">Налог</div>
-                  <div class="result-item-value">
-                    <span id="taxValue"></span> ₽
-                  </div>
-                </div>
-
-                <div class="result-item">
-                  <div class="result-item-label">Эквайринг</div>
-                  <div class="result-item-value">
-                    <span id="acqValue"></span> ₽
+                    <span id="otherGroupValue"></span> ₽
+                    (<span id="otherGroupShare"></span>%)
                   </div>
                 </div>
 
@@ -931,6 +909,7 @@
 
   <script>
     let lastCalculation = null;
+    let historyData = [];
 
     let categories = [];
     let parentCategories = [];
@@ -1054,10 +1033,7 @@
           selectedWarehouse = w;
 
           hideWarehouseList();
-
-          if (hasAnyMainInputsFilled()) {
-            calculate();
-          }
+          // Убрали автокалькуляцию здесь
         });
 
         listEl.appendChild(opt);
@@ -1146,10 +1122,6 @@
             currentFeePercent = 0;
             filterCategoriesForParent();
             hideParentList();
-
-            if (hasAnyMainInputsFilled()) {
-              calculate();
-            }
           });
 
           parentListEl.appendChild(opt);
@@ -1306,10 +1278,6 @@
           }
 
           hideCategoryList();
-
-          if (hasAnyMainInputsFilled()) {
-            calculate();
-          }
         });
 
         listEl.appendChild(opt);
@@ -1453,7 +1421,6 @@
         volume_l = volume_m3 * 1000;
       }
 
-      // Логистика туда: (1л + доп) * K * IL + P * IRP
       let C_ship_to = 0;
       let C_ship_back = 0;
 
@@ -1528,23 +1495,21 @@
         }
       }
 
-      // Доли расходов от цены до СПП
+      const C_other_group = C_acq + C_tax + other_costs;
+
       const feeShare = P > 0 ? (C_fee / P) * 100 : 0;
       const logShare = P > 0 ? (C_logistics_per_unit / P) * 100 : 0;
       const adsShare = P > 0 ? (ads_per_sale / P) * 100 : 0;
-      const otherShare = P > 0 ? (other_costs / P) * 100 : 0;
+      const otherGroupShare = P > 0 ? (C_other_group / P) * 100 : 0;
       const purchaseShare = P > 0 ? (C_purchase / P) * 100 : 0;
 
       document.getElementById('results').style.display = 'block';
-      document.getElementById('volumeValue').textContent = volume_l.toFixed(2);
       document.getElementById('priceBeforeSppValue').textContent = P.toFixed(2);
       document.getElementById('priceForBuyerValue').textContent = P_for_buyer.toFixed(2);
       document.getElementById('feeValue').textContent = C_fee.toFixed(2);
       document.getElementById('logisticsValue').textContent = C_logistics_per_unit.toFixed(2);
       document.getElementById('adsValue').textContent = ads_per_sale.toFixed(2);
-      document.getElementById('otherCostsValue').textContent = other_costs.toFixed(2);
-      document.getElementById('taxValue').textContent = C_tax.toFixed(2);
-      document.getElementById('acqValue').textContent = C_acq.toFixed(2);
+      document.getElementById('otherGroupValue').textContent = C_other_group.toFixed(2);
       document.getElementById('purchaseValue').textContent = C_purchase.toFixed(2);
       document.getElementById('totalCostValue').textContent = C_total.toFixed(2);
       document.getElementById('profitValue').textContent = Profit.toFixed(2);
@@ -1554,7 +1519,7 @@
       document.getElementById('feeShare').textContent = feeShare.toFixed(1);
       document.getElementById('logisticsShare').textContent = logShare.toFixed(1);
       document.getElementById('adsShare').textContent = adsShare.toFixed(1);
-      document.getElementById('otherShare').textContent = otherShare.toFixed(1);
+      document.getElementById('otherGroupShare').textContent = otherGroupShare.toFixed(1);
       document.getElementById('purchaseShare').textContent = purchaseShare.toFixed(1);
 
       const statusBox = document.getElementById('statusBox');
@@ -1577,7 +1542,6 @@
       const today = new Date();
 
       const marketplaceCosts = C_fee + C_logistics_per_unit + ads_per_sale;
-      const otherGroupCosts = C_acq + C_tax + other_costs;
 
       lastCalculation = {
         dateObj: today,
@@ -1600,12 +1564,13 @@
         minPrice: P_min,
         targetMargin: target_margin_percent,
         marketplaceCosts,
-        otherGroupCosts,
+        otherGroupCosts: C_other_group,
         feeShare,
         logShare,
         adsShare,
-        otherShare,
-        purchaseShare
+        otherGroupShare,
+        purchaseShare,
+        totalCost: C_total
       };
     }
 
@@ -1630,6 +1595,8 @@
         alert('Сначала выполните расчёт.');
         return;
       }
+
+      historyData.push(lastCalculation);
 
       const historyCard = document.getElementById('card-history');
       const tbody = document.querySelector('#resultsTable tbody');
@@ -1664,14 +1631,11 @@
     }
 
     function exportToCSV() {
-      const table = document.getElementById('resultsTable');
-      const tbodyRows = Array.from(table.querySelectorAll('tbody tr'));
-      if (tbodyRows.length === 0) {
+      if (!historyData.length) {
         alert('Нет данных для экспорта. Сохраните хотя бы один расчёт в историю.');
         return;
       }
 
-      // Более детализированный CSV, чем таблица на экране
       const header = [
         'Дата',
         'Товар',
@@ -1686,14 +1650,13 @@
         'Логистика, % от цены',
         'Реклама, ₽',
         'Реклама, % от цены',
-        'Прочие, ₽',
+        'Прочие расходы (эквайринг+налог+прочие), ₽',
         'Прочие, % от цены',
         'Закупка, ₽',
         'Закупка, % от цены',
         'Эквайринг, ₽',
         'Налог, ₽',
         'Расходы маркетплейса (комиссия+логистика+реклама), ₽',
-        'Прочие расходы (эквайринг+налог+прочие), ₽',
         'Полные переменные затраты, ₽',
         'Чистая прибыль, ₽',
         'Маржа, %',
@@ -1701,9 +1664,52 @@
         'Целевая маржа, %'
       ];
 
-      // lastCalculation хранит только последний расчёт, поэтому для CSV
-      // будем хранить историю в data-атрибуте? Упростим: пробежим по tbody и
-      // восстановим по тексту невозможно. Поэтому создадим глобальный массив.
+      const rows = historyData.map(item => [
+        item.dateStr,
+        item.productName || '',
+        item.productUrl || '',
+        item.parentCategory || '',
+        item.categoryName || '',
+        item.price.toFixed(2),
+        item.priceForBuyer.toFixed(2),
+        item.fee.toFixed(2),
+        item.feeShare.toFixed(1),
+        item.logistics.toFixed(2),
+        item.logShare.toFixed(1),
+        item.ads.toFixed(2),
+        item.adsShare.toFixed(1),
+        item.otherGroupCosts.toFixed(2),
+        item.otherGroupShare.toFixed(1),
+        item.purchase.toFixed(2),
+        item.purchaseShare.toFixed(1),
+        item.acquiring.toFixed(2),
+        item.tax.toFixed(2),
+        item.marketplaceCosts.toFixed(2),
+        item.totalCost.toFixed(2),
+        item.profit.toFixed(2),
+        item.margin.toFixed(2),
+        item.minPrice > 0 ? item.minPrice.toFixed(2) : '',
+        item.targetMargin > 0 ? item.targetMargin.toFixed(1) : ''
+      ]);
+
+      const csv = [header, ...rows]
+        .map(row =>
+          row
+            .map(cell => `"${String(cell).replace(/"/g, '""')}"`)
+            .join(',')
+        )
+        .join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'wb_unit_economics.csv';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
   </script>
 </body>
