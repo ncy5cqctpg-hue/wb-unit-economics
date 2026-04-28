@@ -236,6 +236,32 @@
       background: #f3f4f6;
     }
 
+    .btn-link-icon {
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      padding: 6px 10px;
+      background: #f3f4f6;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-link-icon.btn-wb-idle {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .btn-link-icon.btn-wb-success {
+      background: #16a34a;
+      border-color: #16a34a;
+      color: #fff;
+    }
+
+    .btn-link-icon.btn-wb-error {
+      background: #dc2626;
+      border-color: #dc2626;
+      color: #fff;
+    }
+
     .results-block {
       margin-top: 6px;
       border-radius: 10px;
@@ -588,12 +614,6 @@
               <small>Произвольное имя для удобства</small>
               <input type="text" id="productName" placeholder="например, Худи мужская" />
             </div>
-
-            <div class="field">
-              <label for="productUrl">Ссылка на товар (свой или аналог)</label>
-              <small>Необязательно, для удобства в истории и CSV</small>
-              <input type="text" id="productUrl" placeholder="https://www.wildberries.ru/catalog/..." />
-            </div>
           </div>
 
           <div class="grid">
@@ -619,7 +639,7 @@
             </div>
           </div>
 
-          <!-- Кнопка и блок добавления фото (по аналогии с ИЛ/ИРП) -->
+          <!-- Кнопка и блок добавления фото -->
           <div class="field" style="margin-top:6px;">
             <button type="button" class="btn-ghost" id="togglePhotoBlock">
               🖼️ Добавить фото товара
@@ -629,20 +649,28 @@
           <div id="photoSettings" style="display:none; margin-top:8px;">
             <div class="grid">
               <div class="field">
-                <label for="wbPhotoUrl">Ссылка на товар WB для фото</label>
-                <small>Вставьте ссылку с Wildberries, фото уйдёт в историю расчётов.</small>
+                <label for="photoFile">Загрузить фото с устройства</label>
+                <small>JPG/PNG, до 5 МБ. Покажем миниатюру и запомним в истории.</small>
                 <input
-                  type="text"
-                  id="wbPhotoUrl"
-                  placeholder="https://www.wildberries.ru/catalog/..."
+                  type="file"
+                  id="photoFile"
+                  accept="image/*"
                 />
               </div>
 
               <div class="field">
-                <label>&nbsp;</label>
-                <button type="button" class="btn-secondary" id="btnLoadPhoto">
-                  🔍 Загрузить фото
-                </button>
+                <label for="wbPhotoUrl">Ссылка на товар WB (опционально)</label>
+                <small>Если указать, попробуем подтянуть фото по ссылке.</small>
+                <div class="inline-suffix">
+                  <input
+                    type="text"
+                    id="wbPhotoUrl"
+                    placeholder="https://www.wildberries.ru/catalog/..."
+                  />
+                  <button type="button" class="btn-link-icon btn-wb-idle" id="btnLoadPhoto">
+                    🔗
+                  </button>
+                </div>
                 <small id="photoStatus" class="categories-status"></small>
               </div>
             </div>
@@ -1007,7 +1035,7 @@
     let selectedWarehouse = null;
     let currentFeePercent = 0;
 
-    // текущее фото товара (url), подтянутое по WB-ссылке
+    // текущее фото товара (url или dataURL)
     let currentProductImage = null;
 
     function toNumber(value) {
@@ -1416,6 +1444,11 @@
         btnLoadPhoto.addEventListener('click', loadPhotoFromWb);
       }
 
+      const photoFileInput = document.getElementById('photoFile');
+      if (photoFileInput) {
+        photoFileInput.addEventListener('change', handleLocalPhotoChange);
+      }
+
       fetch('warehouses.json')
         .then(response => {
           if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -1458,6 +1491,50 @@
         });
     });
 
+    /* ---------- РУЧНАЯ ЗАГРУЗКА ФОТО ---------- */
+
+    function handleLocalPhotoChange(event) {
+      const file = event.target.files && event.target.files[0];
+      const statusEl = document.getElementById('photoStatus');
+      const previewContainer = document.getElementById('photoPreviewContainer');
+      const previewImg = document.getElementById('photoPreviewImg');
+
+      if (!file) {
+        currentProductImage = null;
+        if (previewContainer) previewContainer.style.display = 'none';
+        if (statusEl) statusEl.textContent = '';
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        if (statusEl) statusEl.textContent = 'Можно загрузить только изображения.';
+        event.target.value = '';
+        return;
+      }
+
+      const maxBytes = 5 * 1024 * 1024;
+      if (file.size > maxBytes) {
+        if (statusEl) statusEl.textContent = 'Файл больше 5 МБ.';
+        event.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        const dataUrl = e.target.result;
+        currentProductImage = dataUrl;
+        if (previewImg && previewContainer) {
+          previewImg.src = dataUrl;
+          previewContainer.style.display = 'block';
+        }
+        if (statusEl) statusEl.textContent = 'Фото загружено с устройства.';
+      };
+      reader.onerror = () => {
+        if (statusEl) statusEl.textContent = 'Не удалось прочитать файл.';
+      };
+      reader.readAsDataURL(file);
+    }
+
     /* ---------- ЗАГРУЗКА ФОТО ПО ССЫЛКЕ WB ---------- */
 
     async function loadPhotoFromWb() {
@@ -1465,11 +1542,16 @@
       const statusEl = document.getElementById('photoStatus');
       const previewContainer = document.getElementById('photoPreviewContainer');
       const previewImg = document.getElementById('photoPreviewImg');
+      const btn = document.getElementById('btnLoadPhoto');
 
-      if (!urlInput || !statusEl) return;
+      if (!urlInput || !statusEl || !btn) return;
 
       const wbUrl = (urlInput.value || '').trim();
       statusEl.textContent = '';
+
+      btn.classList.remove('btn-wb-success', 'btn-wb-error');
+      btn.classList.add('btn-wb-idle');
+
       if (!wbUrl) {
         statusEl.textContent = 'Укажи ссылку на товар WB.';
         return;
@@ -1485,20 +1567,29 @@
           statusEl.textContent = data.error || 'Не удалось получить фото товара.';
           currentProductImage = null;
           if (previewContainer) previewContainer.style.display = 'none';
+
+          btn.classList.remove('btn-wb-idle');
+          btn.classList.add('btn-wb-error');
           return;
         }
 
         currentProductImage = data.imageUrl;
-        statusEl.textContent = 'Фото обновлено.';
+        statusEl.textContent = 'Фото получено по ссылке.';
         if (previewImg && previewContainer) {
           previewImg.src = currentProductImage;
           previewContainer.style.display = 'block';
         }
+
+        btn.classList.remove('btn-wb-idle');
+        btn.classList.add('btn-wb-success');
       } catch (e) {
         console.error(e);
         statusEl.textContent = 'Ошибка при запросе к /api/wb-card.';
         currentProductImage = null;
         if (previewContainer) previewContainer.style.display = 'none';
+
+        btn.classList.remove('btn-wb-idle');
+        btn.classList.add('btn-wb-error');
       }
     }
 
@@ -1662,7 +1753,6 @@
       }
 
       const productName = document.getElementById('productName').value || '';
-      const productUrl = document.getElementById('productUrl').value || '';
       const today = new Date();
 
       const marketplaceCosts = C_fee + C_logistics_per_unit + ads_per_sale;
@@ -1671,7 +1761,6 @@
         dateObj: today,
         dateStr: formatDateShort(today),
         productName,
-        productUrl,
         parentCategory: selectedParentCategory || '',
         categoryName: selectedCategory ? selectedCategory.name : '',
         price: P,
@@ -1695,7 +1784,6 @@
         otherGroupShare,
         purchaseShare,
         totalCost: C_total,
-        // фото для истории
         productImage: currentProductImage || null
       };
     }
@@ -1708,6 +1796,9 @@
         el.value = '';
       });
 
+      const fileInput = document.getElementById('photoFile');
+      if (fileInput) fileInput.value = '';
+
       selectedWarehouse = null;
       selectedCategory = null;
       selectedParentCategory = null;
@@ -1716,6 +1807,12 @@
 
       const previewContainer = document.getElementById('photoPreviewContainer');
       if (previewContainer) previewContainer.style.display = 'none';
+
+      const btn = document.getElementById('btnLoadPhoto');
+      if (btn) {
+        btn.classList.remove('btn-wb-success', 'btn-wb-error');
+        btn.classList.add('btn-wb-idle');
+      }
 
       document.getElementById('results').style.display = 'none';
     }
@@ -1803,8 +1900,7 @@
       const header = [
         'Дата',
         'Товар',
-        'Ссылка',
-        'Фото URL',
+        'Фото',
         'Родительская категория',
         'Категория WB',
         'Цена до СПП, ₽',
@@ -1832,7 +1928,6 @@
       const rows = historyData.map(item => [
         item.dateStr,
         item.productName || '',
-        item.productUrl || '',
         item.productImage || '',
         item.parentCategory || '',
         item.categoryName || '',
