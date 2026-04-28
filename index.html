@@ -984,10 +984,23 @@
         </thead>
         <tbody></tbody>
       </table>
-    </section>
+      </section>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // --- Supabase инициализация ---
+    const SUPABASE_URL = 'https://mqybpueawhktiqywpked.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xeWJwdWVhd2hrdGlxeXdwa2VkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNzg1NjEsImV4cCI6MjA5Mjk1NDU2MX0.zhO5LVkqOVLgB0-C22TR89GXafdZ2xc0F2fMXLhiLik';
+
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let lastCalculation = null;
+    let historyData = [];
+    ...
     let lastCalculation = null;
     let historyData = [];
 
