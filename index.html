@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Калькулятор юнит‑экономики для маркетплейса</title>
+  <title>Калькулятор юнит‑экономики Wildberries</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     * {
@@ -410,20 +410,33 @@
       margin-top: 2px;
     }
 
-    /* ---------- DEBUG БЛОК (можно убрать) ---------- */
-    #debug {
-      margin-top: 16px;
+    /* ---------- Тоггл ИЛ / ИРП ---------- */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
       font-size: 12px;
-      color: #111827;
-      background: #f9fafb;
-      border-radius: 8px;
-      border: 1px dashed #d1d5db;
-      padding: 8px 10px;
+      color: #4b5563;
     }
 
-    #debug pre {
-      max-height: 200px;
-      overflow: auto;
+    .toggle-row input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+    }
+
+    .help-links {
+      margin-top: 4px;
+      font-size: 11px;
+    }
+
+    .help-links a {
+      color: #4f46e5;
+      text-decoration: none;
+    }
+
+    .help-links a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -431,11 +444,11 @@
   <div class="app-shell">
     <header class="app-header">
       <div class="app-title">
-        <h1>Калькулятор юнит‑экономики</h1>
-        <div class="subtitle">Быстрый расчёт прибыльности товара на маркетплейсе.</div>
+        <h1>Юнит‑экономика Wildberries</h1>
+        <div class="subtitle">Калькулятор логистики, комиссии и маржи по действующим правилам WB.</div>
       </div>
       <div class="app-meta">
-        <div>v1.3 · офлайн‑расчёт в браузере</div>
+        <div>v1.4 · расчёт в браузере, без передачи данных</div>
       </div>
     </header>
 
@@ -451,7 +464,7 @@
                 <span>1. Карточка товара</span>
               </div>
               <div class="card-subtitle">
-                Сначала выбираем родителя и категорию, потом заполняем параметры.
+                Выберите категорию WB и заполните основные параметры.
               </div>
             </div>
           </div>
@@ -465,9 +478,8 @@
                   type="text"
                   id="parentCategoryInput"
                   class="combobox-input"
-                  placeholder="Выберите родительскую категорию"
+                  placeholder="Начните вводить родительскую категорию"
                   autocomplete="off"
-                  readonly
                 />
                 <div class="combobox-arrow">▾</div>
                 <div class="combobox-list" id="parentCategoryList"></div>
@@ -477,13 +489,13 @@
 
             <div class="field">
               <label for="categoryInput">Категория товара</label>
-              <small>Фильтруется по выбранной родительской категории</small>
+              <small>Можно искать по первым буквам, фильтр учитывает выбранного родителя</small>
               <div class="combobox">
                 <input
                   type="text"
                   id="categoryInput"
                   class="combobox-input"
-                  placeholder="Начните вводить категорию"
+                  placeholder="Начните вводить категорию WB"
                   autocomplete="off"
                 />
                 <div class="combobox-arrow">▾</div>
@@ -532,7 +544,7 @@
                 <span>2. Логистика и габариты</span>
               </div>
               <div class="card-subtitle">
-                Склад, габариты и настройки локализации.
+                Склад, габариты и индексные настройки WB.
               </div>
             </div>
           </div>
@@ -555,7 +567,12 @@
             </div>
           </div>
 
-          <div class="field">
+          <div class="toggle-row">
+            <input type="checkbox" id="useLocalization" checked />
+            <label for="useLocalization">Учитывать ИЛ и ИРП в логистике</label>
+          </div>
+
+          <div class="field" style="margin-top:6px;">
             <button type="button" class="btn-ghost" id="toggleLocalization">
               ⚙️ Настройки локализации (ИЛ / ИРП)
             </button>
@@ -565,15 +582,25 @@
             <div class="grid">
               <div class="field">
                 <label for="ilValue">Индекс локализации (ИЛ)</label>
-                <small>По умолчанию 1</small>
+                <small>По умолчанию 1. Смотреть в ЛК: Тарифы → Индекс локализации.</small>
                 <input type="number" id="ilValue" placeholder="1" step="0.01" />
               </div>
 
               <div class="field">
                 <label for="irpValue">Индекс распределения продаж (ИРП), %</label>
-                <small>По умолчанию 1%</small>
+                <small>По умолчанию 1%. Смотреть в ЛК: Тарифы → Индекс распределения продаж.</small>
                 <input type="number" id="irpValue" placeholder="1" step="0.01" />
               </div>
+            </div>
+            <div class="help-links">
+              <span>Подробнее: </span>
+              <a href="https://seller.wildberries.ru/instructions/ru/ru/material/localization-index" target="_blank" rel="noopener noreferrer">
+                инструкция по ИЛ
+              </a>
+              <span> · </span>
+              <a href="https://seller.wildberries.ru/instructions/ru/ru/material/sales-distribution-index" target="_blank" rel="noopener noreferrer">
+                инструкция по ИРП
+              </a>
             </div>
           </div>
 
@@ -840,12 +867,6 @@
         </section>
       </div>
     </div>
-
-    <!-- DEBUG блок (можно удалить, когда убедишься, что всё ок) -->
-    <div id="debug">
-      <div id="debugCategoriesInfo">Категории пока не загружены…</div>
-      <pre id="debugCategoriesSample"></pre>
-    </div>
   </div>
 
   <script>
@@ -1006,29 +1027,12 @@
       listEl.style.display = listEl.style.display === 'block' ? 'none' : 'block';
     }
 
-    /* ---------- КАТЕГОРИИ: РОДИТЕЛЬ + КОМБОБОКС ---------- */
+    /* ---------- КАТЕГОРИИ: РОДИТЕЛЬ + КОМБОБОКС + ПОИСК ---------- */
 
     let categorySearchTimer = null;
+    let parentSearchTimer = null;
 
-    function initParentCategories() {
-      const parentInput = document.getElementById('parentCategoryInput');
-      const parentListEl = document.getElementById('parentCategoryList');
-      const parentStatus = document.getElementById('parentCategoriesStatus');
-
-      if (!parentInput || !parentListEl) return;
-
-      if (!Array.isArray(categories) || categories.length === 0) {
-        parentListEl.innerHTML = '';
-        const empty = document.createElement('div');
-        empty.className = 'combobox-option';
-        empty.textContent = 'Родительские категории не найдены';
-        parentListEl.appendChild(empty);
-        if (parentStatus) {
-          parentStatus.textContent = 'Родительских категорий: 0';
-        }
-        return;
-      }
-
+    function buildParentCategoriesFromData() {
       const parentsSet = new Set();
       categories.forEach(c => {
         if (c && c.parent) {
@@ -1038,16 +1042,29 @@
       parentCategories = Array.from(parentsSet).sort((a, b) =>
         a.localeCompare(b, 'ru')
       );
+    }
+
+    function renderParentList(filterQuery) {
+      const parentInput = document.getElementById('parentCategoryInput');
+      const parentListEl = document.getElementById('parentCategoryList');
+      const parentStatus = document.getElementById('parentCategoriesStatus');
+      if (!parentInput || !parentListEl) return;
+
+      const q = (filterQuery || '').toLowerCase();
+      const base = parentCategories || [];
+      const toShow = q
+        ? base.filter(p => p.toLowerCase().includes(q))
+        : base;
 
       parentListEl.innerHTML = '';
 
-      if (parentCategories.length === 0) {
+      if (toShow.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'combobox-option';
-        empty.textContent = 'Родительские категории не найдены';
+        empty.textContent = 'Ничего не найдено';
         parentListEl.appendChild(empty);
       } else {
-        parentCategories.forEach(parentName => {
+        toShow.forEach(parentName => {
           const opt = document.createElement('div');
           opt.className = 'combobox-option';
           opt.textContent = parentName;
@@ -1073,15 +1090,32 @@
       }
 
       if (parentStatus) {
-        parentStatus.textContent = 'Родительских категорий: ' + parentCategories.length;
+        parentStatus.textContent = 'Родительских категорий: ' + base.length;
       }
+    }
+
+    function initParentCategories() {
+      const parentInput = document.getElementById('parentCategoryInput');
+      if (!parentInput) return;
+
+      buildParentCategoriesFromData();
+      renderParentList('');
+
+      parentInput.addEventListener('focus', () => {
+        showParentList();
+      });
 
       parentInput.addEventListener('click', () => {
         toggleParentList();
       });
 
-      parentInput.addEventListener('focus', () => {
-        showParentList();
+      parentInput.addEventListener('input', e => {
+        clearTimeout(parentSearchTimer);
+        const value = e.target.value;
+        parentSearchTimer = setTimeout(() => {
+          renderParentList(value);
+          showParentList();
+        }, 150);
       });
 
       document.addEventListener('click', e => {
@@ -1253,12 +1287,10 @@
       listEl.style.display = listEl.style.display === 'block' ? 'none' : 'block';
     }
 
-    /* ---------- ЗАГРУЗКА JSON + кнопка локализации ---------- */
+    /* ---------- ЗАГРУЗКА JSON + настройка локализации ---------- */
 
     window.addEventListener('DOMContentLoaded', () => {
       const categoriesStatus = document.getElementById('categoriesStatus');
-      const dbgInfo = document.getElementById('debugCategoriesInfo');
-      const dbgSample = document.getElementById('debugCategoriesSample');
 
       const toggleBtn = document.getElementById('toggleLocalization');
       const locBox = document.getElementById('localizationSettings');
@@ -1299,12 +1331,6 @@
                 categories = [];
               }
 
-              if (dbgInfo && dbgSample) {
-                dbgInfo.textContent = 'Всего категорий: ' + categories.length;
-                dbgSample.textContent = 'Первые 3 объекта:\n' +
-                  JSON.stringify(categories.slice(0, 3), null, 2);
-              }
-
               initCategories();
               initParentCategories();
             })
@@ -1312,9 +1338,6 @@
               console.error('Ошибка загрузки categories.json:', err);
               if (categoriesStatus) {
                 categoriesStatus.textContent = 'Ошибка загрузки категорий (categories.json).';
-              }
-              if (dbgInfo) {
-                dbgInfo.textContent = 'Ошибка загрузки categories.json: ' + err;
               }
             });
         });
@@ -1331,10 +1354,12 @@
         ? Number(selectedWarehouse.coef)
         : 1;
 
+      const useLocalization = document.getElementById('useLocalization')?.checked ?? true;
+
       const ilRaw = toNumber(document.getElementById('ilValue').value);
       const irpRaw = toNumber(document.getElementById('irpValue').value);
-      const ilValue = ilRaw > 0 ? ilRaw : 1;          // ИЛ по умолчанию 1
-      const irpPercent = irpRaw > 0 ? irpRaw : 1;     // ИРП по умолчанию 1%
+      const ilValue = useLocalization ? (ilRaw > 0 ? ilRaw : 1) : 1;          // ИЛ по умолчанию 1
+      const irpPercent = useLocalization ? (irpRaw > 0 ? irpRaw : 1) : 0;     // если отключено, ИРП = 0
 
       const P = toNumber(document.getElementById('price').value);
       const C_purchase = toNumber(document.getElementById('purchase').value);
@@ -1489,12 +1514,12 @@
     function resetForm() {
       const inputs = document.querySelectorAll('input[type="number"], input[type="text"]');
       inputs.forEach(el => {
-        if (el.id === 'parentCategoryInput') return;
         el.value = '';
       });
 
       selectedWarehouse = null;
       selectedCategory = null;
+      selectedParentCategory = null;
       currentFeePercent = 0;
 
       document.getElementById('results').style.display = 'none';
