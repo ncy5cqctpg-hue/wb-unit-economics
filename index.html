@@ -141,12 +141,18 @@
       font-size: 13px;
       margin-bottom: 3px;
       color: #374151;
+      min-height: 28px; /* чтобы выровнять строки при разной длине подписи */
+      display: flex;
+      align-items: flex-end;
     }
 
     .field small {
       font-size: 11px;
       color: #9ca3af;
       margin-bottom: 3px;
+      min-height: 24px; /* выравниваем подсказки в строке */
+      display: flex;
+      align-items: flex-start;
     }
 
     .field input {
@@ -234,32 +240,6 @@
 
     .btn-ghost:hover {
       background: #f3f4f6;
-    }
-
-    .btn-link-icon {
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
-      padding: 6px 10px;
-      background: #f3f4f6;
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    .btn-link-icon.btn-wb-idle {
-      background: #f3f4f6;
-      color: #4b5563;
-    }
-
-    .btn-link-icon.btn-wb-success {
-      background: #16a34a;
-      border-color: #16a34a;
-      color: #fff;
-    }
-
-    .btn-link-icon.btn-wb-error {
-      background: #dc2626;
-      border-color: #dc2626;
-      color: #fff;
     }
 
     .results-block {
@@ -547,7 +527,7 @@
           <h1>Юнит‑экономика Wildberries</h1>
           <span class="badge-beta">beta</span>
         </div>
-        <div class="subtitle">Калькулятор логистики, комиссии и маржи WB, актуален на 01.05.2026.</div>
+        <div class="subtitle">актуален на 01.05.2026.</div>
       </div>
       <div class="app-meta">
         <div>v1.7 · расчёт в браузере, без передачи данных</div>
@@ -592,7 +572,7 @@
 
             <div class="field">
               <label for="categoryInput">Категория товара</label>
-              <small>Можно искать по первым буквам, фильтр учитывает выбранного родителя</small>
+              <small>Можно искать по первым буквам, учитывая выбранного родителя</small>
               <div class="combobox">
                 <input
                   type="text"
@@ -647,6 +627,15 @@
           </div>
 
           <div id="photoSettings" style="display:none; margin-top:8px;">
+            <!-- Превью -->
+            <div class="field" id="photoPreviewContainer" style="margin-bottom:8px; display:none;">
+              <small>Текущее превью для истории расчётов:</small>
+              <div class="history-thumb-wrapper">
+                <img id="photoPreviewImg" src="" alt="Фото товара" class="history-thumb-img" />
+              </div>
+            </div>
+
+            <!-- Загрузка файла -->
             <div class="grid">
               <div class="field">
                 <label for="photoFile">Загрузить фото с устройства</label>
@@ -656,29 +645,7 @@
                   id="photoFile"
                   accept="image/*"
                 />
-              </div>
-
-              <div class="field">
-                <label for="wbPhotoUrl">Ссылка на товар WB (опционально)</label>
-                <small>Если указать, попробуем подтянуть фото по ссылке.</small>
-                <div class="inline-suffix">
-                  <input
-                    type="text"
-                    id="wbPhotoUrl"
-                    placeholder="https://www.wildberries.ru/catalog/..."
-                  />
-                  <button type="button" class="btn-link-icon btn-wb-idle" id="btnLoadPhoto">
-                    🔗
-                  </button>
-                </div>
                 <small id="photoStatus" class="categories-status"></small>
-              </div>
-            </div>
-
-            <div class="field" id="photoPreviewContainer" style="margin-top:6px; display:none;">
-              <small>Текущее превью для истории расчётов:</small>
-              <div class="history-thumb-wrapper">
-                <img id="photoPreviewImg" src="" alt="Фото товара" class="history-thumb-img" />
               </div>
             </div>
           </div>
@@ -1439,11 +1406,6 @@
         });
       }
 
-      const btnLoadPhoto = document.getElementById('btnLoadPhoto');
-      if (btnLoadPhoto) {
-        btnLoadPhoto.addEventListener('click', loadPhotoFromWb);
-      }
-
       const photoFileInput = document.getElementById('photoFile');
       if (photoFileInput) {
         photoFileInput.addEventListener('change', handleLocalPhotoChange);
@@ -1533,64 +1495,6 @@
         if (statusEl) statusEl.textContent = 'Не удалось прочитать файл.';
       };
       reader.readAsDataURL(file);
-    }
-
-    /* ---------- ЗАГРУЗКА ФОТО ПО ССЫЛКЕ WB ---------- */
-
-    async function loadPhotoFromWb() {
-      const urlInput = document.getElementById('wbPhotoUrl');
-      const statusEl = document.getElementById('photoStatus');
-      const previewContainer = document.getElementById('photoPreviewContainer');
-      const previewImg = document.getElementById('photoPreviewImg');
-      const btn = document.getElementById('btnLoadPhoto');
-
-      if (!urlInput || !statusEl || !btn) return;
-
-      const wbUrl = (urlInput.value || '').trim();
-      statusEl.textContent = '';
-
-      btn.classList.remove('btn-wb-success', 'btn-wb-error');
-      btn.classList.add('btn-wb-idle');
-
-      if (!wbUrl) {
-        statusEl.textContent = 'Укажи ссылку на товар WB.';
-        return;
-      }
-
-      statusEl.textContent = 'Загружаю фото...';
-
-      try {
-        const resp = await fetch(`/api/wb-card?url=${encodeURIComponent(wbUrl)}`);
-        const data = await resp.json();
-
-        if (!resp.ok || !data.imageUrl) {
-          statusEl.textContent = data.error || 'Не удалось получить фото товара.';
-          currentProductImage = null;
-          if (previewContainer) previewContainer.style.display = 'none';
-
-          btn.classList.remove('btn-wb-idle');
-          btn.classList.add('btn-wb-error');
-          return;
-        }
-
-        currentProductImage = data.imageUrl;
-        statusEl.textContent = 'Фото получено по ссылке.';
-        if (previewImg && previewContainer) {
-          previewImg.src = currentProductImage;
-          previewContainer.style.display = 'block';
-        }
-
-        btn.classList.remove('btn-wb-idle');
-        btn.classList.add('btn-wb-success');
-      } catch (e) {
-        console.error(e);
-        statusEl.textContent = 'Ошибка при запросе к /api/wb-card.';
-        currentProductImage = null;
-        if (previewContainer) previewContainer.style.display = 'none';
-
-        btn.classList.remove('btn-wb-idle');
-        btn.classList.add('btn-wb-error');
-      }
     }
 
     /* ---------- РАСЧЁТ ---------- */
@@ -1793,7 +1697,9 @@
     function resetForm() {
       const inputs = document.querySelectorAll('input[type="number"], input[type="text"]');
       inputs.forEach(el => {
-        el.value = '';
+        if (el.type !== 'file') {
+          el.value = '';
+        }
       });
 
       const fileInput = document.getElementById('photoFile');
@@ -1808,11 +1714,8 @@
       const previewContainer = document.getElementById('photoPreviewContainer');
       if (previewContainer) previewContainer.style.display = 'none';
 
-      const btn = document.getElementById('btnLoadPhoto');
-      if (btn) {
-        btn.classList.remove('btn-wb-success', 'btn-wb-error');
-        btn.classList.add('btn-wb-idle');
-      }
+      const statusEl = document.getElementById('photoStatus');
+      if (statusEl) statusEl.textContent = '';
 
       document.getElementById('results').style.display = 'none';
     }
