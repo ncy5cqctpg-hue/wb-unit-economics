@@ -52,20 +52,25 @@ export default async function handler(req, res) {
 function extractNmId(rawUrl) {
   try {
     const u = new URL(rawUrl);
-    const parts = u.pathname.split('/');
-    const idx = parts.indexOf('catalog');
-    if (idx !== -1 && parts.length > idx + 1) {
-      const raw = parts[idx + 1];
-      const match = raw.match(/\d+/);
-      return match ? match[0] : null;
+    const path = u.pathname || '';
+
+    // Ищем /catalog/553101632/...
+    const match = path.match(/\/catalog\/(\d+)/);
+    if (match && match[1]) {
+      return match[1];
     }
+
+    // Если вдруг формат другой — ищем просто длинное число в path
+    const digitsMatch = path.match(/(\d{6,})/);
+    if (digitsMatch && digitsMatch[1]) {
+      return digitsMatch[1];
+    }
+
     return null;
   } catch {
     return null;
   }
-}
-
-// Получаем card.json, перебирая basket-сервера
+}// Получаем card.json, перебирая basket-сервера
 async function fetchCardJson(nmId) {
   const article = String(nmId);
   const part = article.slice(0, -3);   // все кроме последних 3 цифр
