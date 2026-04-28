@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Авторизация | Калькулятор юнит-экономики</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0b1120;
+      --bg-card: #020617;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.12);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #ef4444;
+      --border: #1f2937;
+      --input-bg: #020617;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0, #020617 55%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .auth-shell {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(145deg, rgba(15,23,42,0.95), rgba(15,23,42,0.98));
+      border-radius: 24px;
+      padding: 24px 24px 20px;
+      border: 1px solid rgba(148,163,184,0.25);
+      box-shadow:
+        0 24px 80px rgba(0,0,0,0.75),
+        0 0 0 1px rgba(15,23,42,0.9);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .auth-shell::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 0 0, rgba(34,197,94,0.10), transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(56,189,248,0.10), transparent 55%);
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .auth-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(148,163,184,0.45);
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 10px;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(34,197,94,0.28);
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      margin: 0 0 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .title span.highlight {
+      background: linear-gradient(120deg, #22c55e, #a3e635);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      margin: 0 0 18px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .subtitle a {
+      color: #22c55e;
+      text-decoration: none;
+    }
+
+    .subtitle a:hover {
+      text-decoration: underline;
+    }
+
+    .switcher {
+      display: inline-flex;
+      padding: 3px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(148,163,184,0.55);
+      margin-bottom: 16px;
+    }
+
+    .switcher button {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+    }
+
+    .switcher button span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: transparent;
+    }
+
+    .switcher button.active {
+      background: rgba(15,23,42,0.95);
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(34,197,94,0.65), 0 12px 30px rgba(15,23,42,0.9);
+    }
+
+    .switcher button.active span.dot {
+      background: var(--accent);
+    }
+
+    .form {
+      margin-bottom: 16px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background-color: var(--input-bg);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    }
+
+    input::placeholder {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    input:focus {
+      border-color: rgba(34,197,94,0.8);
+      box-shadow: 0 0 0 1px rgba(34,197,94,0.5), 0 0 0 4px rgba(34,197,94,0.18);
+      background-color: #020617;
+    }
+
+    .helper-text {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .btn {
+      width: 100%;
+      border-radius: 999px;
+      padding: 9px 14px;
+      border: none;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, opacity 0.12s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
+      color: #0f172a;
+      box-shadow:
+        0 18px 40px rgba(22,163,74,0.75),
+        0 0 0 1px rgba(34,197,94,0.85);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow:
+        0 22px 50px rgba(22,163,74,0.85),
+        0 0 0 1px rgba(250,250,250,0.9);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0px) scale(0.99);
+      box-shadow:
+        0 10px 25px rgba(22,163,74,0.9),
+        0 0 0 1px rgba(34,197,94,0.9);
+    }
+
+    .btn-secondary {
+      background: rgba(15,23,42,0.9);
+      color: var(--muted);
+      border: 1px solid rgba(148,163,184,0.6);
+      box-shadow: 0 12px 30px rgba(15,23,42,0.9);
+      margin-top: 8px;
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-1px);
+      border-color: rgba(148,163,184,0.9);
+    }
+
+    .btn span.icon {
+      font-size: 14px;
+    }
+
+    .btn[disabled] {
+      opacity: 0.6;
+      cursor: default;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .status {
+      font-size: 12px;
+      margin-top: 10px;
+      min-height: 18px;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .status.success {
+      color: var(--accent);
+    }
+
+    .status span.code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    .meta {
+      margin-top: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px dashed rgba(51,65,85,0.8);
+      padding-top: 10px;
+    }
+
+    .meta a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .meta a:hover {
+      color: var(--accent);
+    }
+
+    .tag {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(55,65,81,0.9);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    @media (max-width: 480px) {
+      .auth-shell {
+        padding: 20px 16px 16px;
+        border-radius: 18px;
+      }
+
+      .title {
+        font-size: 19px;
+      }
+
+      .subtitle {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-shell">
+    <div class="auth-inner">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        <span>Доступ к личному кабинету</span>
+      </div>
+
+      <h1 class="title">
+        Вход в <span class="highlight">калькулятор</span>
+      </h1>
+      <p class="subtitle">
+        Авторизуйтесь, чтобы сохранять и возвращаться к своим расчётам юнит‑экономики. После входа вы будете перенаправлены в калькулятор.
+      </p>
+
+      <div class="switcher">
+        <button id="mode-login" class="active" type="button">
+          <span class="dot"></span>
+          <span>Войти</span>
+        </button>
+        <button id="mode-signup" type="button">
+          <span class="dot"></span>
+          <span>Зарегистрироваться</span>
+        </button>
+      </div>
+
+      <form id="auth-form" class="form">
+        <div class="field">
+          <div class="label-row">
+            <label for="email">Email</label>
+          </div>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="password">Пароль</label>
+          </div>
+          <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Минимум 6 символов" required />
+          <div class="helper-text">Используйте рабочую почту, к которой у вас есть доступ.</div>
+        </div>
+
+        <button id="submit-btn" type="submit" class="btn btn-primary">
+          <span class="icon">⏵</span>
+          <span id="submit-label">Войти</span>
+        </button>
+
+        <button id="logout-btn" type="button" class="btn btn-secondary" style="display:none;">
+          <span class="icon">⏏</span>
+          <span>Выйти из аккаунта</span>
+        </button>
+      </form>
+
+      <div id="status" class="status"></div>
+
+      <div class="meta">
+        <span class="tag">supabase auth</span>
+        <a id="back-link" href="/">← Вернуться к калькулятору</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 1. Инициализация Supabase клиента
+    const { createClient } = supabase;
+
+    // ВАШИ реальные значения
+    const supabaseUrl = 'https://mqybpueawhktiqywpked.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xeWJwdWVhd2hrdGlxeXdwa2VkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNzg1NjEsImV4cCI6MjA5Mjk1NDU2MX0.zhO5LVkqOVLgB0-C22TR89GXafdZ2xc0F2fMXLhiLik';
+
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+
+    // 2. Элементы интерфейса
+    const modeLoginBtn = document.getElementById('mode-login');
+    const modeSignupBtn = document.getElementById('mode-signup');
+    const form = document.getElementById('auth-form');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const submitBtn = document.getElementById('submit-btn');
+    const submitLabel = document.getElementById('submit-label');
+    const statusEl = document.getElementById('status');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    // Куда редиректить после успешного входа:
+    const AFTER_LOGIN_REDIRECT = '/'; // если калькулятор на index.html в корне
+
+    let mode = 'login'; // 'login' | 'signup'
+
+    function setMode(nextMode) {
+      mode = nextMode;
+
+      if (mode === 'login') {
+        modeLoginBtn.classList.add('active');
+        modeSignupBtn.classList.remove('active');
+        submitLabel.textContent = 'Войти';
+        statusEl.textContent = '';
+      } else {
+        modeSignupBtn.classList.add('active');
+        modeLoginBtn.classList.remove('active');
+        submitLabel.textContent = 'Создать аккаунт';
+        statusEl.textContent = 'После регистрации проверьте почту, если включено подтверждение email в Supabase.';
+      }
+    }
+
+    modeLoginBtn.addEventListener('click', () => setMode('login'));
+    modeSignupBtn.addEventListener('click', () => setMode('signup'));
+
+    function setLoading(isLoading) {
+      submitBtn.disabled = isLoading;
+      emailInput.disabled = isLoading;
+      passwordInput.disabled = isLoading;
+    }
+
+    function setStatus(message, type = '') {
+      statusEl.textContent = message || '';
+      statusEl.className = 'status' + (type ? ' ' + type : '');
+    }
+
+    async function refreshSessionState() {
+      const {
+        data: { session },
+        error,
+      } = await supabaseClient.auth.getSession();
+
+      if (error) {
+        console.error('Ошибка получения сессии', error);
+        setStatus('Не удалось проверить сессию', 'error');
+        logoutBtn.style.display = 'none';
+        return;
+      }
+
+      if (session && session.user) {
+        // Пользователь уже авторизован
+        logoutBtn.style.display = 'inline-flex';
+        setStatus(`Вы уже вошли как ${session.user.email}`, 'success');
+      } else {
+        logoutBtn.style.display = 'none';
+      }
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      setStatus('');
+      setLoading(true);
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      try {
+        if (!email || !password) {
+          setStatus('Заполните email и пароль', 'error');
+          return;
+        }
+
+        if (password.length < 6) {
+          setStatus('Пароль должен быть не меньше 6 символов', 'error');
+          return;
+        }
+
+        if (mode === 'signup') {
+          // Регистрация
+          const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password,
+          });
+          if (error) {
+            console.error(error);
+            setStatus(error.message || 'Ошибка при регистрации', 'error');
+            return;
+          }
+
+          setStatus('Аккаунт создан. Проверьте почту (если включено подтверждение email). Теперь вы можете войти.', 'success');
+          setMode('login');
+        } else {
+          // Вход
+          const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email,
+            password,
+          });
+          if (error) {
+            console.error(error);
+            setStatus(error.message || 'Ошибка при входе', 'error');
+            return;
+          }
+
+          setStatus('Успешный вход. Перенаправляем в калькулятор...', 'success');
+
+          // Небольшая пауза, чтобы пользователь увидел статус
+          setTimeout(() => {
+            window.location.href = AFTER_LOGIN_REDIRECT;
+          }, 800);
+        }
+      } catch (err) {
+        console.error(err);
+        setStatus('Непредвиденная ошибка. Попробуйте ещё раз.', 'error');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      setLoading(true);
+      setStatus('');
+
+      try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+          console.error(error);
+          setStatus(error.message || 'Ошибка при выходе', 'error');
+          return;
+        }
+        setStatus('Вы вышли из аккаунта.', 'success');
+        logoutBtn.style.display = 'none';
+      } catch (err) {
+        console.error(err);
+        setStatus('Непредвиденная ошибка при выходе', 'error');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // При открытии страницы проверяем, есть ли уже сессия
+    refreshSessionState();
+  </script>
+</body>
+</html>
