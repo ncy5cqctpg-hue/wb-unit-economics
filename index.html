@@ -141,7 +141,7 @@
       font-size: 13px;
       margin-bottom: 3px;
       color: #374151;
-      min-height: 28px; /* чтобы выровнять строки при разной длине подписи */
+      min-height: 28px;
       display: flex;
       align-items: flex-end;
     }
@@ -150,7 +150,7 @@
       font-size: 11px;
       color: #9ca3af;
       margin-bottom: 3px;
-      min-height: 24px; /* выравниваем подсказки в строке */
+      min-height: 24px;
       display: flex;
       align-items: flex-start;
     }
@@ -818,16 +818,16 @@
           </div>
 
           <div class="actions-row">
-            <button class="btn-primary" onclick="calculate()">
+            <button class="btn-primary" type="button" onclick="calculate()">
               🔢 Рассчитать
             </button>
-            <button class="btn-secondary" onclick="resetForm()">
+            <button class="btn-secondary" type="button" onclick="resetForm()">
               ♻️ Сбросить
             </button>
-            <button class="btn-ghost" onclick="saveToTable()">
+            <button class="btn-ghost" type="button" onclick="saveToTable()">
               💾 Сохранить в историю
             </button>
-            <button class="btn-ghost" onclick="exportToCSV()">
+            <button class="btn-ghost" type="button" onclick="exportToCSV()">
               ⬇️ Экспорт в CSV
             </button>
           </div>
@@ -962,7 +962,7 @@
           <span>Сохранённые расчёты</span>
         </div>
         <div class="history-header-subtitle">
-          Данные сохраняются только в текущей вкладке браузера.
+          Данные сохраняются пока в текущей вкладке браузера.
         </div>
       </div>
 
@@ -984,12 +984,11 @@
         </thead>
         <tbody></tbody>
       </table>
-      </section>
+    </section>
   </div>
 
+  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // --- Supabase инициализация ---
     const SUPABASE_URL = 'https://mqybpueawhktiqywpked.supabase.co';
@@ -998,9 +997,9 @@
     const { createClient } = supabase;
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let lastCalculation = null;
-    let historyData = [];
-    ...
+    // дальше пока всё работает только в браузере; позже
+    // сюда добавим сохранение/загрузку из Supabase по user_id.
+
     let lastCalculation = null;
     let historyData = [];
 
@@ -1015,7 +1014,6 @@
     let selectedWarehouse = null;
     let currentFeePercent = 0;
 
-    // текущее фото товара (url или dataURL)
     let currentProductImage = null;
 
     function toNumber(value) {
@@ -1409,7 +1407,6 @@
         });
       }
 
-      // Переключатель блока фото
       const photoToggleBtn = document.getElementById('togglePhotoBlock');
       const photoBox = document.getElementById('photoSettings');
       if (photoToggleBtn && photoBox) {
@@ -1759,12 +1756,9 @@
           ? `${lastCalculation.minPrice.toFixed(2)} ₽ при ${lastCalculation.targetMargin.toFixed(1)}%`
           : '—';
 
-      // дата
       row.appendChild(td(lastCalculation.dateStr));
-      // товар
       row.appendChild(td(lastCalculation.productName || ''));
 
-      // фото
       const imgCell = document.createElement('td');
       if (lastCalculation.productImage) {
         const wrapper = document.createElement('div');
