@@ -410,7 +410,7 @@
       margin-top: 2px;
     }
 
-    /* ---------- DEBUG БЛОК ---------- */
+    /* ---------- DEBUG БЛОК (можно убрать) ---------- */
     #debug {
       margin-top: 16px;
       font-size: 12px;
@@ -435,7 +435,7 @@
         <div class="subtitle">Быстрый расчёт прибыльности товара на маркетплейсе.</div>
       </div>
       <div class="app-meta">
-        <div>v1.2 · офлайн‑расчёт в браузере</div>
+        <div>v1.3 · офлайн‑расчёт в браузере</div>
       </div>
     </header>
 
@@ -532,7 +532,7 @@
                 <span>2. Логистика и габариты</span>
               </div>
               <div class="card-subtitle">
-                Склад, индексы и размер упаковки.
+                Склад, габариты и настройки локализации.
               </div>
             </div>
           </div>
@@ -553,17 +553,27 @@
                 <div class="combobox-list" id="warehouseList"></div>
               </div>
             </div>
+          </div>
 
-            <div class="field">
-              <label for="ilValue">ИЛ в день заказа</label>
-              <small>Индекс логистики (IL)</small>
-              <input type="number" id="ilValue" placeholder="например, 1" step="0.01" />
-            </div>
+          <div class="field">
+            <button type="button" class="btn-ghost" id="toggleLocalization">
+              ⚙️ Настройки локализации (ИЛ / ИРП)
+            </button>
+          </div>
 
-            <div class="field">
-              <label for="irpValue">ИРП в день заказа</label>
-              <small>Индекс расчёта по цене (IRP)</small>
-              <input type="number" id="irpValue" placeholder="например, 0.02" step="0.0001" />
+          <div id="localizationSettings" style="display:none; margin-top:8px;">
+            <div class="grid">
+              <div class="field">
+                <label for="ilValue">Индекс локализации (ИЛ)</label>
+                <small>По умолчанию 1</small>
+                <input type="number" id="ilValue" placeholder="1" step="0.01" />
+              </div>
+
+              <div class="field">
+                <label for="irpValue">Индекс распределения продаж (ИРП), %</label>
+                <small>По умолчанию 1%</small>
+                <input type="number" id="irpValue" placeholder="1" step="0.01" />
+              </div>
             </div>
           </div>
 
@@ -831,7 +841,7 @@
       </div>
     </div>
 
-    <!-- DEBUG блок -->
+    <!-- DEBUG блок (можно удалить, когда убедишься, что всё ок) -->
     <div id="debug">
       <div id="debugCategoriesInfo">Категории пока не загружены…</div>
       <pre id="debugCategoriesSample"></pre>
@@ -850,7 +860,7 @@
     let selectedParentCategory = null;
     let selectedCategory = null;
     let selectedWarehouse = null;
-    let currentFeePercent = 0; // комиссия категории, скрытая от пользователя
+    let currentFeePercent = 0;
 
     function toNumber(value) {
       const n = parseFloat((value || '').toString().replace(',', '.'));
@@ -1028,8 +1038,6 @@
       parentCategories = Array.from(parentsSet).sort((a, b) =>
         a.localeCompare(b, 'ru')
       );
-
-      console.log('PARENT CATEGORIES:', parentCategories);
 
       parentListEl.innerHTML = '';
 
@@ -1245,12 +1253,21 @@
       listEl.style.display = listEl.style.display === 'block' ? 'none' : 'block';
     }
 
-    /* ---------- ЗАГРУЗКА JSON ---------- */
+    /* ---------- ЗАГРУЗКА JSON + кнопка локализации ---------- */
 
     window.addEventListener('DOMContentLoaded', () => {
       const categoriesStatus = document.getElementById('categoriesStatus');
       const dbgInfo = document.getElementById('debugCategoriesInfo');
       const dbgSample = document.getElementById('debugCategoriesSample');
+
+      const toggleBtn = document.getElementById('toggleLocalization');
+      const locBox = document.getElementById('localizationSettings');
+      if (toggleBtn && locBox) {
+        toggleBtn.addEventListener('click', () => {
+          const visible = locBox.style.display === 'block';
+          locBox.style.display = visible ? 'none' : 'block';
+        });
+      }
 
       fetch('warehouses.json')
         .then(response => {
@@ -1282,9 +1299,6 @@
                 categories = [];
               }
 
-              console.log('CATEGORIES LOADED:', categories);
-
-              // Диагностика на странице
               if (dbgInfo && dbgSample) {
                 dbgInfo.textContent = 'Всего категорий: ' + categories.length;
                 dbgSample.textContent = 'Первые 3 объекта:\n' +
@@ -1317,8 +1331,10 @@
         ? Number(selectedWarehouse.coef)
         : 1;
 
-      const ilValue = toNumber(document.getElementById('ilValue').value);
-      const irpValue = toNumber(document.getElementById('irpValue').value);
+      const ilRaw = toNumber(document.getElementById('ilValue').value);
+      const irpRaw = toNumber(document.getElementById('irpValue').value);
+      const ilValue = ilRaw > 0 ? ilRaw : 1;          // ИЛ по умолчанию 1
+      const irpPercent = irpRaw > 0 ? irpRaw : 1;     // ИРП по умолчанию 1%
 
       const P = toNumber(document.getElementById('price').value);
       const C_purchase = toNumber(document.getElementById('purchase').value);
@@ -1345,7 +1361,10 @@
         volume_l = volume_m3 * 1000;
       }
 
+      // Логистика туда: (1л + доп) * K * IL + P * IRP
       let C_ship_to = 0;
+      let C_ship_back = 0;
+
       if (volume_l > 0) {
         const tariffPerL = getTariffPerLiter(volume_l);
         let C_fwd_base;
@@ -1358,11 +1377,11 @@
         } else {
           C_fwd_base = volume_l * tariffPerL;
         }
-        C_ship_to = C_fwd_base * warehouseCoef * ilValue + P * irpValue;
-      }
 
-      let C_ship_back = 0;
-      if (volume_l > 0) {
+        const C_liters = C_fwd_base * warehouseCoef * ilValue;
+        const C_irp = P * (irpPercent / 100);
+        C_ship_to = C_liters + C_irp;
+
         if (volume_l <= 1) {
           C_ship_back = 46;
         } else {
