@@ -37,6 +37,22 @@
       gap: 2px;
     }
 
+    .app-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-beta {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f97316;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
     .app-title h1 {
       font-size: 22px;
       margin: 0;
@@ -51,6 +67,15 @@
       font-size: 12px;
       color: #777;
       text-align: right;
+    }
+
+    .app-meta a {
+      color: #4f46e5;
+      text-decoration: none;
+    }
+
+    .app-meta a:hover {
+      text-decoration: underline;
     }
 
     .layout-grid {
@@ -221,8 +246,8 @@
 
     .results-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 6px 14px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px 16px;
     }
 
     .result-item {
@@ -306,7 +331,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 8px;
-      margin-top: 10px;
+      margin-bottom: 6px;
     }
 
     .history-header-title {
@@ -408,9 +433,9 @@
       font-size: 11px;
       color: #9ca3af;
       margin-top: 2px;
+      min-height: 13px;
     }
 
-    /* ---------- Тоггл ИЛ / ИРП ---------- */
     .toggle-row {
       display: flex;
       align-items: center;
@@ -444,11 +469,15 @@
   <div class="app-shell">
     <header class="app-header">
       <div class="app-title">
-        <h1>Юнит‑экономика Wildberries</h1>
+        <div class="app-title-row">
+          <h1>Юнит‑экономика Wildberries</h1>
+          <span class="badge-beta">beta</span>
+        </div>
         <div class="subtitle">Калькулятор логистики, комиссии и маржи по действующим правилам WB.</div>
       </div>
       <div class="app-meta">
-        <div>v1.4 · расчёт в браузере, без передачи данных</div>
+        <div>v1.5 · расчёт в браузере, без передачи данных</div>
+        <div>Обратная связь: <a href="https://t.me/Denidevil" target="_blank" rel="noopener noreferrer">@Denidevil</a></div>
       </div>
     </header>
 
@@ -723,10 +752,10 @@
             <div>
               <div class="card-title">
                 <span class="icon">📊</span>
-                <span>4. Результаты и история</span>
+                <span>4. Итоги расчёта</span>
               </div>
               <div class="card-subtitle">
-                Итоговые показатели и сохранённые расчёты.
+                Чистая прибыль и маржа с учётом всех переменных расходов.
               </div>
             </div>
           </div>
@@ -742,7 +771,7 @@
                 </div>
 
                 <div class="result-item">
-                  <div class="result-item-label">Цена до СПП</div>
+                  <div class="result-item-label">Цена продажи (до СПП)</div>
                   <div class="result-item-value">
                     <span id="priceBeforeSppValue"></span> ₽
                   </div>
@@ -763,9 +792,23 @@
                 </div>
 
                 <div class="result-item">
-                  <div class="result-item-label">Эквайринг</div>
+                  <div class="result-item-label">Логистика на один выкуп</div>
                   <div class="result-item-value">
-                    <span id="acqValue"></span> ₽
+                    <span id="logisticsValue"></span> ₽
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Реклама (ДРР)</div>
+                  <div class="result-item-value">
+                    <span id="adsValue"></span> ₽
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Прочие переменные расходы</div>
+                  <div class="result-item-value">
+                    <span id="otherCostsValue"></span> ₽
                   </div>
                 </div>
 
@@ -777,23 +820,16 @@
                 </div>
 
                 <div class="result-item">
-                  <div class="result-item-label">Логистика туда</div>
+                  <div class="result-item-label">Эквайринг</div>
                   <div class="result-item-value">
-                    <span id="shipToValue"></span> ₽
+                    <span id="acqValue"></span> ₽
                   </div>
                 </div>
 
                 <div class="result-item">
-                  <div class="result-item-label">Логистика возврата</div>
+                  <div class="result-item-label">Закупочная цена</div>
                   <div class="result-item-value">
-                    <span id="shipBackValue"></span> ₽
-                  </div>
-                </div>
-
-                <div class="result-item">
-                  <div class="result-item-label">Логистика на один выкуп</div>
-                  <div class="result-item-value">
-                    <span id="logisticsValue"></span> ₽
+                    <span id="purchaseValue"></span> ₽
                   </div>
                 </div>
 
@@ -805,7 +841,7 @@
                 </div>
 
                 <div class="result-item">
-                  <div class="result-item-label">Прибыль на выкуп</div>
+                  <div class="result-item-label">Прибыль на единицу</div>
                   <div class="result-item-value">
                     <span id="profitValue"></span> ₽
                   </div>
@@ -819,7 +855,7 @@
                 </div>
 
                 <div class="result-item">
-                  <div class="result-item-label">Мин. цена при целевой марже</div>
+                  <div class="result-item-label">Минимальная цена при целевой марже</div>
                   <div class="result-item-value">
                     <span id="minPriceValue"></span> ₽
                   </div>
@@ -832,41 +868,55 @@
               <div class="status-text"></div>
             </div>
           </div>
-
-          <div id="tableSection" style="margin-top: 14px; display:none;">
-            <div class="history-header">
-              <div class="history-header-title">
-                <span>📚 История расчётов</span>
-                <span class="history-header-subtitle">
-                  Сохраняется локально в текущей вкладке
-                </span>
-              </div>
-            </div>
-            <table id="resultsTable">
-              <thead>
-                <tr>
-                  <th>Товар</th>
-                  <th>Родитель</th>
-                  <th>Категория</th>
-                  <th>Цена до СПП, ₽</th>
-                  <th>Цена для покупателя, ₽</th>
-                  <th>Комиссия, ₽</th>
-                  <th>Логистика с выкупом, ₽</th>
-                  <th>Реклама, ₽</th>
-                  <th>Прочие, ₽</th>
-                  <th>Себестоимость, ₽</th>
-                  <th>Эквайринг, ₽</th>
-                  <th>Налог, ₽</th>
-                  <th>Прибыль, ₽</th>
-                  <th>Маржа, %</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
         </section>
       </div>
     </div>
+
+    <!-- Блок 5: История расчётов -->
+    <section class="card" id="card-history" style="margin-top:16px; display:none;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <span class="icon">📚</span>
+            <span>5. История расчётов</span>
+          </div>
+          <div class="card-subtitle">
+            Сравнивайте несколько сценариев по одной или разным карточкам.
+          </div>
+        </div>
+      </div>
+
+      <div class="history-header">
+        <div class="history-header-title">
+          <span>Сохранённые расчёты</span>
+        </div>
+        <div class="history-header-subtitle">
+          Данные сохраняются только в текущей вкладке браузера.
+        </div>
+      </div>
+
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>Товар</th>
+            <th>Родитель</th>
+            <th>Категория</th>
+            <th>Цена до СПП, ₽</th>
+            <th>Цена для покупателя, ₽</th>
+            <th>Комиссия, ₽</th>
+            <th>Логистика с выкупом, ₽</th>
+            <th>Реклама, ₽</th>
+            <th>Прочие, ₽</th>
+            <th>Себестоимость, ₽</th>
+            <th>Эквайринг, ₽</th>
+            <th>Налог, ₽</th>
+            <th>Прибыль, ₽</th>
+            <th>Маржа, %</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
   </div>
 
   <script>
@@ -1090,7 +1140,7 @@
       }
 
       if (parentStatus) {
-        parentStatus.textContent = 'Родительских категорий: ' + base.length;
+        parentStatus.textContent = '';
       }
     }
 
@@ -1162,7 +1212,7 @@
       renderCategoryList();
 
       if (statusEl) {
-        statusEl.textContent = 'Загружено категорий: ' + categories.length;
+        statusEl.textContent = '';
       }
 
       input.addEventListener('focus', () => {
@@ -1358,8 +1408,8 @@
 
       const ilRaw = toNumber(document.getElementById('ilValue').value);
       const irpRaw = toNumber(document.getElementById('irpValue').value);
-      const ilValue = useLocalization ? (ilRaw > 0 ? ilRaw : 1) : 1;          // ИЛ по умолчанию 1
-      const irpPercent = useLocalization ? (irpRaw > 0 ? irpRaw : 1) : 0;     // если отключено, ИРП = 0
+      const ilValue = useLocalization ? (ilRaw > 0 ? ilRaw : 1) : 1;
+      const irpPercent = useLocalization ? (irpRaw > 0 ? irpRaw : 1) : 0;
 
       const P = toNumber(document.getElementById('price').value);
       const C_purchase = toNumber(document.getElementById('purchase').value);
@@ -1466,11 +1516,12 @@
       document.getElementById('priceBeforeSppValue').textContent = P.toFixed(2);
       document.getElementById('priceForBuyerValue').textContent = P_for_buyer.toFixed(2);
       document.getElementById('feeValue').textContent = C_fee.toFixed(2);
-      document.getElementById('acqValue').textContent = C_acq.toFixed(2);
-      document.getElementById('taxValue').textContent = C_tax.toFixed(2);
-      document.getElementById('shipToValue').textContent = C_ship_to.toFixed(2);
-      document.getElementById('shipBackValue').textContent = C_ship_back.toFixed(2);
       document.getElementById('logisticsValue').textContent = C_logistics_per_unit.toFixed(2);
+      document.getElementById('adsValue').textContent = ads_per_sale.toFixed(2);
+      document.getElementById('otherCostsValue').textContent = other_costs.toFixed(2);
+      document.getElementById('taxValue').textContent = C_tax.toFixed(2);
+      document.getElementById('acqValue').textContent = C_acq.toFixed(2);
+      document.getElementById('purchaseValue').textContent = C_purchase.toFixed(2);
       document.getElementById('totalCostValue').textContent = C_total.toFixed(2);
       document.getElementById('profitValue').textContent = Profit.toFixed(2);
       document.getElementById('marginValue').textContent = margin_percent.toFixed(2);
@@ -1531,10 +1582,10 @@
         return;
       }
 
-      const tableSection = document.getElementById('tableSection');
+      const historyCard = document.getElementById('card-history');
       const tbody = document.querySelector('#resultsTable tbody');
 
-      tableSection.style.display = 'block';
+      historyCard.style.display = 'block';
 
       const row = document.createElement('tr');
 
