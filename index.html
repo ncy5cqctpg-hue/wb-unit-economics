@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Калькулятор упаковки WB</title>
+  <title>Калькулятор упаковки для WB</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -12,7 +12,7 @@
       background: #f5f5f5;
     }
     .container {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
       background: #fff;
       padding: 20px;
@@ -54,9 +54,11 @@
     .row {
       display: flex;
       gap: 12px;
+      flex-wrap: wrap;
     }
     .row .field {
       flex: 1;
+      min-width: 140px;
     }
     .hint {
       font-size: 12px;
@@ -72,6 +74,37 @@
     .status.success {
       color: #15803d;
     }
+    .history-block {
+      margin-top: 20px;
+      border-top: 1px solid #e5e5e5;
+      padding-top: 12px;
+    }
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .history-item img {
+      width: 60px;
+      height: 80px;
+      border-radius: 4px;
+      object-fit: cover;
+      background: #eee;
+    }
+    .history-item a {
+      color: #2563eb;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .history-item a:hover {
+      text-decoration: underline;
+    }
+    .history-meta {
+      font-size: 12px;
+      color: #555;
+    }
   </style>
 </head>
 <body>
@@ -81,12 +114,12 @@
     <!-- Ссылка на товар WB -->
     <div class="field">
       <label for="productUrl">Ссылка на товар Wildberries</label>
-      <input id="productUrl" type="text" placeholder="https://www.wildberries.ru/catalog/208285191/detail.aspx" />
-      <div class="hint">Вставьте ссылку на товар с сайта WB и нажмите кнопку ниже.</div>
+      <input id="productUrl" type="text" placeholder="https://www.wildberries.ru/catalog/553101632/detail.aspx" />
+      <div class="hint">Вставьте ссылку на товар с сайта WB — мы сохраним превью товара в истории.</div>
     </div>
 
     <div class="field">
-      <button type="button" id="btnWbAutofill">Подтянуть данные с WB</button>
+      <button type="button" id="btnWbAdd">Добавить по ссылке WB</button>
       <div id="wbStatus" class="status"></div>
     </div>
 
@@ -108,7 +141,7 @@
       </div>
     </div>
 
-    <!-- Категория -->
+    <!-- Категории (оставляем под твой текущий калькулятор) -->
     <div class="row">
       <div class="field">
         <label for="parentCategory">Родительская категория</label>
@@ -122,20 +155,28 @@
 
     <div class="field">
       <div class="hint">
-        Ниже можешь оставить свой старый функционал калькулятора (расчёты по категориям / ГТД и т.п.).
+        Ниже можно выводить результаты расчётов и любую дополнительную информацию твоего калькулятора.
+      </div>
+    </div>
+
+    <!-- История проверок -->
+    <div class="history-block">
+      <label>История проверок</label>
+      <div id="historyContainer" class="history-container">
+        <!-- сюда будут добавляться карточки истории -->
       </div>
     </div>
   </div>
 
   <script>
-    let categoriesCache = null;
-    let categoriesLoaded = false;
+    // В памяти: список проверок (можно потом сохранить в localStorage, если захочешь)
+    const historyItems = [];
 
-    document.getElementById('btnWbAutofill').addEventListener('click', autofillFromWbUrl);
+    document.getElementById('btnWbAdd').addEventListener('click', handleWbImage);
 
-    async function autofillFromWbUrl() {
+    async function handleWbImage() {
       const statusEl = document.getElementById('wbStatus');
-      const btn = document.getElementById('btnWbAutofill');
+      const btn = document.getElementById('btnWbAdd');
       const urlInput = document.getElementById('productUrl');
       const wbUrl = urlInput.value.trim();
 
@@ -149,7 +190,7 @@
       }
 
       btn.disabled = true;
-      statusEl.textContent = 'Получаем данные с WB...';
+      statusEl.textContent = 'Получаем данные товара...';
 
       try {
         const resp = await fetch(`/api/wb-card?url=${encodeURIComponent(wbUrl)}`);
@@ -157,22 +198,31 @@
 
         if (!resp.ok) {
           console.error('API error', data);
-          statusEl.textContent = data.error || 'Не удалось подтянуть данные с WB.';
+          statusEl.textContent = data.error || 'Не удалось получить данные с WB.';
           statusEl.classList.add('error');
           return;
         }
 
-        // Заполняем габариты, если есть
-        if (data.lengthCm) document.getElementById('lengthCm').value = data.lengthCm;
-        if (data.widthCm) document.getElementById('widthCm').value = data.widthCm;
-        if (data.heightCm) document.getElementById('heightCm').value = data.heightCm;
+        // Собираем запись для истории
+        const item = {
+          timestamp: new Date().toISOString(),
+          productUrl: data.productUrl || wbUrl,
+          nmId: data.nmId,
+          imageUrl: data.imageUrl || null,
+          lengthCm: document.getElementById('lengthCm')?.value || null,
+          widthCm: document.getElementById('widthCm')?.value || null,
+          heightCm: document.getElementById('heightCm')?.value || null,
+          parentCategory: document.getElementById('parentCategory')?.value || null,
+          category: document.getElementById('category')?.value || null,
+        };
 
-        // Пытаемся подобрать категорию
-        if (data.subjectName) {
-          await autofillCategoryBySubject(data.subjectName);
-        }
+        // Добавляем в начало истории
+        historyItems.unshift(item);
+        renderHistory();
 
-        statusEl.textContent = `Данные подгружены. Артикул: ${data.nmId}${data.subjectName ? ', категория WB: ' + data.subjectName : ''}`;
+        statusEl.textContent = data.imageUrl
+          ? `Товар ${data.nmId} добавлен в историю (изображение найдено).`
+          : `Товар ${data.nmId} добавлен в историю (изображение найти не удалось).`;
         statusEl.classList.add('success');
       } catch (e) {
         console.error(e);
@@ -183,55 +233,70 @@
       }
     }
 
-    async function loadCategoriesOnce() {
-      if (categoriesLoaded) return;
-      try {
-        const resp = await fetch('/categories.json');
-        if (!resp.ok) {
-          console.warn('Не удалось загрузить categories.json');
-          categoriesLoaded = true;
-          categoriesCache = [];
-          return;
-        }
-        categoriesCache = await resp.json();
-        categoriesLoaded = true;
-      } catch (e) {
-        console.error('Ошибка загрузки categories.json', e);
-        categoriesLoaded = true;
-        categoriesCache = [];
+    function renderHistory() {
+      const container = document.getElementById('historyContainer');
+      container.innerHTML = '';
+
+      if (historyItems.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'hint';
+        empty.textContent = 'Пока нет проверенных товаров.';
+        container.appendChild(empty);
+        return;
       }
-    }
 
-    async function autofillCategoryBySubject(subjectName) {
-      await loadCategoriesOnce();
-      if (!categoriesCache || categoriesCache.length === 0) return;
+      historyItems.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
 
-      const lower = subjectName.toLowerCase();
+        if (item.imageUrl) {
+          const img = document.createElement('img');
+          img.src = item.imageUrl;
+          img.alt = item.nmId || '';
+          img.loading = 'lazy';
+          div.appendChild(img);
+        }
 
-      // Простой поиск по точному совпадению wbSubject/subjectName в categories.json
-      let found = categoriesCache.find(c => {
-        if (c.wbSubject) return String(c.wbSubject).toLowerCase() === lower;
-        if (c.subjectName) return String(c.subjectName).toLowerCase() === lower;
-        return false;
+        const info = document.createElement('div');
+
+        const title = document.createElement('div');
+        title.innerHTML = `<strong>Артикул: ${item.nmId || '—'}</strong>`;
+        info.appendChild(title);
+
+        const link = document.createElement('div');
+        const a = document.createElement('a');
+        a.href = item.productUrl;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = 'Открыть товар на WB';
+        link.appendChild(a);
+        info.appendChild(link);
+
+        const meta = document.createElement('div');
+        meta.className = 'history-meta';
+        const dims = [
+          item.lengthCm ? `Д: ${item.lengthCm} см` : null,
+          item.widthCm ? `Ш: ${item.widthCm} см` : null,
+          item.heightCm ? `В: ${item.heightCm} см` : null,
+        ].filter(Boolean).join(', ');
+        const cats = [
+          item.parentCategory || null,
+          item.category || null,
+        ].filter(Boolean).join(' → ');
+
+        let metaText = [];
+        if (dims) metaText.push(dims);
+        if (cats) metaText.push(`Категория: ${cats}`);
+        meta.textContent = metaText.join(' | ') || '';
+        info.appendChild(meta);
+
+        div.appendChild(info);
+        container.appendChild(div);
       });
-
-      // Если нет точного совпадения — пробуем по вхождению
-      if (!found) {
-        found = categoriesCache.find(c => {
-          const name = (c.wbSubject || c.subjectName || c.name || '').toLowerCase();
-          return name && lower.includes(name);
-        });
-      }
-
-      if (found) {
-        if (found.parent) {
-          document.getElementById('parentCategory').value = found.parent;
-        }
-        if (found.name) {
-          document.getElementById('category').value = found.name;
-        }
-      }
     }
+
+    // При загрузке страницы просто показываем пустое состояние истории
+    renderHistory();
   </script>
 </body>
 </html>
