@@ -1178,16 +1178,9 @@
       const authOpenModalBtn = document.getElementById('authOpenModalBtn');
       const authSignOutBtn = document.getElementById('authSignOutBtn');
 
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      const session = sessionData?.session || null;
-
-      let user = null;
-      if (session && session.user) {
-        user = session.user;
-      } else {
-        const { data } = await supabaseClient.auth.getUser();
-        user = data?.user || null;
-      }
+      // Рекомендуется сначала getUser, затем getSession. [web:1421]
+      const { data: userData } = await supabaseClient.auth.getUser();
+      const user = userData?.user || null;
 
       if (user) {
         authStatus.innerHTML = 'Вошёл как <span>' + (user.email || 'user') + '</span>';
@@ -1248,7 +1241,7 @@
           shouldCreateUser: true,
           emailRedirectTo: 'https://wbform.github.io/wb-unit-economics/'
         }
-      }); // [web:1307][web:1189]
+      }); // [web:1189]
 
       if (error) {
         console.error('Sign in error:', error);
@@ -1324,7 +1317,7 @@
     }
 
     supabaseClient.auth.onAuthStateChange((_event, _session) => {
-      updateAuthUI();
+      updateAuthUI(); // Быстрый апдейт, если событие пришло сразу. [web:1337]
     });
 
     function toNumber(value) {
@@ -1704,7 +1697,7 @@
       listEl.style.display = listEl.style.display === 'block' ? 'none' : 'block';
     }
 
-    /* ---------- ЗАГРУЗКА JSON + MAGIC LINK TOKEN ---------- */
+    /* ---------- ЗАГРУЗКА JSON + MAGIC LINK TOKEN + ПУЛЛИНГ СЕССИИ ---------- */
 
     window.addEventListener('DOMContentLoaded', async () => {
       const url = new URL(window.location.href);
@@ -1715,7 +1708,7 @@
 
       if (token) {
         try {
-          await supabaseClient.auth.getSession();
+          await supabaseClient.auth.getSession(); // триггерим обновление сессии, если нужно. [web:1420]
         } catch (e) {
           console.error('Ошибка при восстановлении сессии:', e);
         } finally {
@@ -1819,10 +1812,25 @@
       if (btnLoginApple) btnLoginApple.addEventListener('click', () => loginWithProvider('apple'));
       if (btnLoginYandex) btnLoginYandex.addEventListener('click', () => loginWithProvider('custom:yandex'));
 
+      // Стартовое обновление
       updateAuthUI();
-      setTimeout(() => {
-        updateAuthUI();
-      }, 1500);
+
+      // Активный опрос сессии первые 15 секунд после загрузки (после OAuth‑редиректа) [web:1420][web:1414]
+      let authPollAttempts = 0;
+      const authPollMaxAttempts = 15;
+      const authPollInterval = setInterval(async () => {
+        authPollAttempts += 1;
+
+        const { data } = await supabaseClient.auth.getSession();
+        const session = data?.session || null;
+
+        if (session && session.user) {
+          await updateAuthUI();
+          clearInterval(authPollInterval);
+        } else if (authPollAttempts >= authPollMaxAttempts) {
+          clearInterval(authPollInterval);
+        }
+      }, 1000);
 
       fetch('warehouses.json')
         .then(response => {
