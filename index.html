@@ -78,6 +78,53 @@
       text-decoration: underline;
     }
 
+    .auth-bar {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+      align-items: center;
+      font-size: 12px;
+      color: #4b5563;
+    }
+
+    .auth-email-input {
+      max-width: 220px;
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      font-size: 12px;
+      background: #f9fafb;
+      outline: none;
+    }
+
+    .auth-email-input:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.18);
+      background: #ffffff;
+    }
+
+    .auth-status {
+      min-width: 80px;
+      text-align: right;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .auth-status span {
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .auth-message {
+      width: 100%;
+      text-align: right;
+      font-size: 11px;
+      color: #6b7280;
+      min-height: 14px;
+    }
+
     .layout-grid {
       display: grid;
       grid-template-columns: minmax(0, 2fr) minmax(0, 2fr);
@@ -242,6 +289,27 @@
       background: #f3f4f6;
     }
 
+    .btn-auth {
+      background: #111827;
+      color: #f9fafb;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 999px;
+    }
+
+    .btn-auth:hover {
+      background: #020617;
+    }
+
+    .btn-auth-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-auth-secondary:hover {
+      background: #d1d5db;
+    }
+
     .results-block {
       margin-top: 6px;
       border-radius: 10px;
@@ -371,6 +439,10 @@
       button {
         justify-content: center;
         width: 100%;
+      }
+
+      .auth-bar {
+        justify-content: flex-start;
       }
     }
 
@@ -529,9 +601,32 @@
         </div>
         <div class="subtitle">актуален на 01.05.2026.</div>
       </div>
-      <div class="app-meta">
-        <div>v1.9 · расчёт в браузере, без передачи данных</div>
-        <div>Обратная связь: <a href="https://t.me/Denidevil" target="_blank" rel="noopener noreferrer">@Denidevil</a></div>
+      <div>
+        <div class="app-meta">
+          <div>v2.0 · расчёт в браузере, без передачи данных</div>
+          <div>Обратная связь: <a href="https://t.me/Denidevil" target="_blank" rel="noopener noreferrer">@Denidevil</a></div>
+        </div>
+
+        <!-- Панель авторизации -->
+        <div class="auth-bar">
+          <div class="auth-status" id="authStatus">
+            Не авторизован
+          </div>
+          <input
+            type="email"
+            id="authEmail"
+            class="auth-email-input"
+            placeholder="email для входа"
+            autocomplete="email"
+          />
+          <button type="button" class="btn-auth" id="authSignInBtn">
+            🔑 Войти
+          </button>
+          <button type="button" class="btn-auth btn-auth-secondary" id="authSignOutBtn" style="display:none;">
+            🚪 Выйти
+          </button>
+          <div class="auth-message" id="authMessage"></div>
+        </div>
       </div>
     </header>
 
@@ -957,7 +1052,7 @@
           <span>Сохранённые расчёты</span>
         </div>
         <div class="history-header-subtitle">
-          Данные сохраняются пока в текущей вкладке браузера.
+          Пока сохраняется только в этой вкладке. Позже привяжем к аккаунту.
         </div>
       </div>
 
@@ -1010,6 +1105,78 @@
     let currentFeePercent = 0;
 
     let currentProductImage = null;
+
+    // -------- AUTH: MAGIC LINK ------
+    async function updateAuthUI() {
+      const authStatus = document.getElementById('authStatus');
+      const authMessage = document.getElementById('authMessage');
+      const signInBtn = document.getElementById('authSignInBtn');
+      const signOutBtn = document.getElementById('authSignOutBtn');
+      const authEmailInput = document.getElementById('authEmail');
+
+      const { data } = await supabaseClient.auth.getUser(); // всегда проверяет токен [web:1305]
+      const user = data?.user || null;
+
+      if (user) {
+        authStatus.innerHTML = 'Вошёл как <span>' + (user.email || 'user') + '</span>';
+        signInBtn.style.display = 'none';
+        signOutBtn.style.display = 'inline-flex';
+        if (authEmailInput && user.email) {
+          authEmailInput.value = user.email;
+        }
+      } else {
+        authStatus.textContent = 'Не авторизован';
+        signInBtn.style.display = 'inline-flex';
+        signOutBtn.style.display = 'none';
+      }
+      authMessage.textContent = '';
+    }
+
+    async function signInWithMagicLink() {
+      const authEmailInput = document.getElementById('authEmail');
+      const authMessage = document.getElementById('authMessage');
+      if (!authEmailInput) return;
+
+      const email = (authEmailInput.value || '').trim();
+      if (!email) {
+        authMessage.textContent = 'Введите email, на него придёт ссылка для входа.';
+        return;
+      }
+
+      authMessage.textContent = 'Отправляем magic link...';
+
+      const { error } = await supabaseClient.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+          // поставь сюда домен своего калькулятора на GitHub Pages
+          emailRedirectTo: window.location.origin
+        }
+      }); // [web:1297][web:1301]
+
+      if (error) {
+        console.error(error);
+        authMessage.textContent = 'Ошибка при отправке письма: ' + error.message;
+      } else {
+        authMessage.textContent = 'Письмо со ссылкой отправлено. Проверьте почту и перейдите по ссылке.';
+      }
+    }
+
+    async function signOut() {
+      const authMessage = document.getElementById('authMessage');
+      const { error } = await supabaseClient.auth.signOut(); // [web:1306]
+      if (error) {
+        authMessage.textContent = 'Ошибка при выходе: ' + error.message;
+      } else {
+        authMessage.textContent = 'Вы вышли из аккаунта.';
+        updateAuthUI();
+      }
+    }
+
+    // Подписка на изменения сессии (после клика по magic link)
+    supabaseClient.auth.onAuthStateChange((_event, _session) => {
+      updateAuthUI();
+    }); // [web:1302]
 
     function toNumber(value) {
       const n = parseFloat((value || '').toString().replace(',', '.'));
@@ -1388,7 +1555,7 @@
       listEl.style.display = listEl.style.display === 'block' ? 'none' : 'block';
     }
 
-    /* ---------- ЗАГРУЗКА JSON + настройка локализации / фото ---------- */
+    /* ---------- ЗАГРУЗКА JSON + настройка локализации / фото + AUTH UI ---------- */
 
     window.addEventListener('DOMContentLoaded', () => {
       const categoriesStatus = document.getElementById('categoriesStatus');
@@ -1415,6 +1582,13 @@
       if (photoFileInput) {
         photoFileInput.addEventListener('change', handleLocalPhotoChange);
       }
+
+      const signInBtn = document.getElementById('authSignInBtn');
+      const signOutBtn = document.getElementById('authSignOutBtn');
+      if (signInBtn) signInBtn.addEventListener('click', signInWithMagicLink);
+      if (signOutBtn) signOutBtn.addEventListener('click', signOut);
+
+      updateAuthUI(); // проверяем, есть ли пользователь при загрузке [web:1302]
 
       fetch('warehouses.json')
         .then(response => {
@@ -1536,7 +1710,7 @@
         return;
       }
 
-      const P_for_buyer = P * (1 - spp_percent / 100); // цена для покупателя [web:1278]
+      const P_for_buyer = P * (1 - spp_percent / 100);
       const ads_per_sale = P * (ads_percent / 100);
 
       let volume_l = 0;
@@ -1594,7 +1768,6 @@
         ads_per_sale +
         other_costs;
 
-      // Налог от выручки [web:1285][web:1278]
       let C_tax = 0;
       if (tax_percent > 0) {
         C_tax = P * (tax_percent / 100);
@@ -1604,7 +1777,6 @@
       const Profit = P - C_total;
       const margin_percent = P > 0 ? (Profit / P) * 100 : 0;
 
-      // Минимальная цена под целевую маржу (по той же логике, что раньше)
       let P_min = 0;
       const target_margin_percent = toNumber(document.getElementById('targetMargin').value);
       if (target_margin_percent > 0) {
@@ -1694,7 +1866,7 @@
     function resetForm() {
       const inputs = document.querySelectorAll('input[type="number"], input[type="text"]');
       inputs.forEach(el => {
-        if (el.type !== 'file') {
+        if (el.type !== 'file' && el.id !== 'authEmail') {
           el.value = '';
         }
       });
