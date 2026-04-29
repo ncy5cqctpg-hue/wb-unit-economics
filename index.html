@@ -530,7 +530,7 @@
         <div class="subtitle">актуален на 01.05.2026.</div>
       </div>
       <div class="app-meta">
-        <div>v1.7 · расчёт в браузере, без передачи данных</div>
+        <div>v1.8 · расчёт в браузере, без передачи данных</div>
         <div>Обратная связь: <a href="https://t.me/Denidevil" target="_blank" rel="noopener noreferrer">@Denidevil</a></div>
       </div>
     </header>
@@ -790,8 +790,8 @@
 
           <div class="grid">
             <div class="field">
-              <label for="taxPercent">Налог, %</label>
-              <small>Например, УСН 6% от прибыли</small>
+              <label for="taxPercent">Налог, % (УСН 6% от выручки)</label>
+              <small>Считаем от выручки до СПП (P × ставка)</small>
               <div class="inline-suffix">
                 <input type="number" id="taxPercent" placeholder="например, 6" step="0.01" />
                 <span>%</span>
@@ -833,7 +833,7 @@
           </div>
         </section>
 
-        <!-- Блок 4: Результаты -->
+        <!-- Блок 4: Итоги -->
         <section class="card" id="card-results">
           <div class="card-header">
             <div>
@@ -889,7 +889,31 @@
                 </div>
 
                 <div class="result-item">
-                  <div class="result-item-label">Прочие расходы (эквайринг + налог + прочие)</div>
+                  <div class="result-item-label">Эквайринг</div>
+                  <div class="result-item-value">
+                    <span id="acquiringValue"></span> ₽
+                    (<span id="acquiringShare"></span>%)
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Налог</div>
+                  <div class="result-item-value">
+                    <span id="taxValue"></span> ₽
+                    (<span id="taxShare"></span>%)
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Прочие переменные расходы</div>
+                  <div class="result-item-value">
+                    <span id="otherCostsValue"></span> ₽
+                    (<span id="otherCostsShare"></span>%)
+                  </div>
+                </div>
+
+                <div class="result-item">
+                  <div class="result-item-label">Переменные расходы без закупки</div>
                   <div class="result-item-value">
                     <span id="otherGroupValue"></span> ₽
                     (<span id="otherGroupShare"></span>%)
@@ -975,7 +999,9 @@
             <th>Цена до СПП, ₽</th>
             <th>Цена с СПП, ₽</th>
             <th>Расходы маркетплейса, ₽</th>
-            <th>Прочие расходы, ₽</th>
+            <th>Эквайринг, ₽</th>
+            <th>Налог, ₽</th>
+            <th>Прочие, ₽</th>
             <th>Закупка, ₽</th>
             <th>Чистая прибыль, ₽</th>
             <th>Маржа, %</th>
@@ -996,9 +1022,6 @@
 
     const { createClient } = supabase;
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // дальше пока всё работает только в браузере; позже
-    // сюда добавим сохранение/загрузку из Supabase по user_id.
 
     let lastCalculation = null;
     let historyData = [];
@@ -1507,7 +1530,7 @@
       reader.readAsDataURL(file);
     }
 
-    /* ---------- РАСЧЁТ ---------- */
+    /* ---------- РАСЧЁТ (налог от выручки) ---------- */
 
     function calculate() {
       const lengthCm = toNumber(document.getElementById('lengthCm').value);
@@ -1541,7 +1564,7 @@
         return;
       }
 
-      const P_for_buyer = P * (1 - spp_percent / 100);
+      const P_for_buyer = P * (1 - spp_percent / 100); // цена для покупателя [web:1288]
       const ads_per_sale = P * (ads_percent / 100);
 
       let volume_l = 0;
@@ -1599,10 +1622,10 @@
         ads_per_sale +
         other_costs;
 
-      let Profit_before_tax = P - C_base_before_tax;
+      // Налог от выручки (УСН 6%) [web:1278][web:1286]
       let C_tax = 0;
-      if (Profit_before_tax > 0 && tax_percent > 0) {
-        C_tax = Profit_before_tax * (tax_percent / 100);
+      if (tax_percent > 0) {
+        C_tax = P * (tax_percent / 100);
       }
 
       const C_total = C_base_before_tax + C_tax;
@@ -1631,6 +1654,9 @@
       const adsShare = P > 0 ? (ads_per_sale / P) * 100 : 0;
       const otherGroupShare = P > 0 ? (C_other_group / P) * 100 : 0;
       const purchaseShare = P > 0 ? (C_purchase / P) * 100 : 0;
+      const acquiringShare = P > 0 ? (C_acq / P) * 100 : 0;
+      const taxShare = P > 0 ? (C_tax / P) * 100 : 0;
+      const otherCostsShare = P > 0 ? (other_costs / P) * 100 : 0;
 
       document.getElementById('results').style.display = 'block';
       document.getElementById('priceBeforeSppValue').textContent = P.toFixed(2);
@@ -1638,6 +1664,9 @@
       document.getElementById('feeValue').textContent = C_fee.toFixed(2);
       document.getElementById('logisticsValue').textContent = C_logistics_per_unit.toFixed(2);
       document.getElementById('adsValue').textContent = ads_per_sale.toFixed(2);
+      document.getElementById('acquiringValue').textContent = C_acq.toFixed(2);
+      document.getElementById('taxValue').textContent = C_tax.toFixed(2);
+      document.getElementById('otherCostsValue').textContent = other_costs.toFixed(2);
       document.getElementById('otherGroupValue').textContent = C_other_group.toFixed(2);
       document.getElementById('purchaseValue').textContent = C_purchase.toFixed(2);
       document.getElementById('totalCostValue').textContent = C_total.toFixed(2);
@@ -1648,6 +1677,9 @@
       document.getElementById('feeShare').textContent = feeShare.toFixed(1);
       document.getElementById('logisticsShare').textContent = logShare.toFixed(1);
       document.getElementById('adsShare').textContent = adsShare.toFixed(1);
+      document.getElementById('acquiringShare').textContent = acquiringShare.toFixed(1);
+      document.getElementById('taxShare').textContent = taxShare.toFixed(1);
+      document.getElementById('otherCostsShare').textContent = otherCostsShare.toFixed(1);
       document.getElementById('otherGroupShare').textContent = otherGroupShare.toFixed(1);
       document.getElementById('purchaseShare').textContent = purchaseShare.toFixed(1);
 
@@ -1792,7 +1824,9 @@
       row.appendChild(td(lastCalculation.price.toFixed(2)));
       row.appendChild(td(lastCalculation.priceForBuyer.toFixed(2)));
       row.appendChild(td(lastCalculation.marketplaceCosts.toFixed(2)));
-      row.appendChild(td(lastCalculation.otherGroupCosts.toFixed(2)));
+      row.appendChild(td(lastCalculation.acquiring.toFixed(2)));
+      row.appendChild(td(lastCalculation.tax.toFixed(2)));
+      row.appendChild(td(lastCalculation.otherCosts.toFixed(2)));
       row.appendChild(td(lastCalculation.purchase.toFixed(2)));
       row.appendChild(td(lastCalculation.profit.toFixed(2)));
       row.appendChild(td(lastCalculation.margin.toFixed(2)));
