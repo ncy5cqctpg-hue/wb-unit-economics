@@ -597,14 +597,12 @@
       cursor: pointer;
     }
 
-    /* ---------- Мелкий текст под настройками прочих расходов ---------- */
     .other-costs-note {
       font-size: 11px;
       color: #9ca3af;
       margin-top: 4px;
       line-height: 1.4;
     }
-
   </style>
 </head>
 <body>
@@ -619,11 +617,10 @@
       </div>
       <div>
         <div class="app-meta">
-          <div>v2.1 · расчёт в браузере, без передачи данных</div>
+          <div>v2.2 · расчёт в браузере, без передачи данных</div>
           <div>Обратная связь: <a href="https://t.me/Denidevil" target="_blank" rel="noopener noreferrer">@Denidevil</a></div>
         </div>
 
-        <!-- Панель авторизации -->
         <div class="auth-bar">
           <div class="auth-status" id="authStatus">
             Не авторизован
@@ -639,9 +636,7 @@
     </header>
 
     <div class="layout-grid">
-      <!-- Левая колонка: товар + логистика -->
       <div class="left-column">
-        <!-- Блок 1: Товар -->
         <section class="card" id="card-product">
           <div class="card-header">
             <div>
@@ -722,7 +717,6 @@
             </div>
           </div>
 
-          <!-- Кнопка и блок добавления фото -->
           <div class="field" style="margin-top:6px;">
             <button type="button" class="btn-ghost" id="togglePhotoBlock">
               🖼️ Добавить фото товара
@@ -730,7 +724,6 @@
           </div>
 
           <div id="photoSettings" style="display:none; margin-top:8px;">
-            <!-- Превью -->
             <div class="field" id="photoPreviewContainer" style="margin-bottom:8px; display:none;">
               <small>Текущее превью для истории расчётов:</small>
               <div class="history-thumb-wrapper">
@@ -738,7 +731,6 @@
               </div>
             </div>
 
-            <!-- Загрузка файла -->
             <div class="grid">
               <div class="field">
                 <label for="photoFile">Загрузить фото с устройства</label>
@@ -754,7 +746,6 @@
           </div>
         </section>
 
-        <!-- Блок 2: Логистика -->
         <section class="card" id="card-logistics">
           <div class="card-header">
             <div>
@@ -847,9 +838,7 @@
         </section>
       </div>
 
-      <!-- Правая колонка: расходы + итоги -->
       <div class="right-column">
-        <!-- Блок 3: Расходы -->
         <section class="card" id="card-costs">
           <div class="card-header">
             <div>
@@ -889,7 +878,6 @@
             </div>
           </div>
 
-          <!-- Настройки прочих расходов -->
           <div class="field" style="margin-top:6px;">
             <button type="button" class="btn-ghost" id="toggleOtherCostsSettings">
               ⚙️ Настроить прочие расходы
@@ -933,7 +921,7 @@
 
             <div class="other-costs-note">
               Самовыкупы: (логистика до покупателя при 100% выкупа + 15 ₽ забора + 350 ₽ сервис) × 15% самовыкупов.  
-              Раздачи: цена до СПП × процент раздач.
+              Раздачи: цена до СПП × процент раздач. Сумма по настройкам автоматически переносится в «Прочие расходы».
             </div>
           </div>
 
@@ -984,7 +972,6 @@
           </div>
         </section>
 
-        <!-- Блок 4: Итоги -->
         <section class="card" id="card-results">
           <div class="card-header">
             <div>
@@ -1089,7 +1076,6 @@
       </div>
     </div>
 
-    <!-- Блок 5: История расчётов -->
     <section class="card" id="card-history" style="margin-top:16px; display:none;">
       <div class="card-header">
         <div>
@@ -1136,7 +1122,6 @@
     </section>
   </div>
 
-  <!-- Модальное окно авторизации -->
   <div id="authModalBackdrop" class="auth-modal-backdrop">
     <div id="authModal" class="auth-modal">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -1156,7 +1141,6 @@
         </button>
       </div>
 
-      <!-- Вкладка email -->
       <div id="authEmailPane">
         <div style="font-size:12px; color:#6b7280; margin-bottom:6px;">
           Введите email, мы отправим ссылку для входа. Регистрация происходит автоматически.
@@ -1175,7 +1159,6 @@
         <div class="auth-message" id="authMessage" style="text-align:left; margin-top:4px;"></div>
       </div>
 
-      <!-- Вкладка соцсетей -->
       <div id="authSocialPane" style="display:none;">
         <div style="font-size:12px; color:#6b7280; margin-bottom:8px;">
           Выберите удобный способ входа. При первом входе создадим аккаунт автоматически.
@@ -1198,10 +1181,8 @@
     </div>
   </div>
 
-  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // --- Supabase инициализация ---
     const SUPABASE_URL = 'https://mqybpueawhktiqywpked.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xeWJwdWVhd2hrdGlxeXdwa2VkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNzg1NjEsImV4cCI6MjA5Mjk1NDU2MX0.zhO5LVkqOVLgB0-C22TR89GXafdZ2xc0F2fMXLhiLik';
 
@@ -1221,14 +1202,16 @@
     let selectedCategory = null;
     let selectedWarehouse = null;
     let currentFeePercent = 0;
-
     let currentProductImage = null;
 
-    // --- auth state ---
     let isSigningOut = false;
     let isSendingMagicLink = false;
     let magicLinkCooldownSeconds = 30;
     let magicLinkCooldownTimer = null;
+
+    // служебные флаги для прочих расходов
+    let otherCostsManualOverride = false;
+    let otherCostsFromSettings = 0;
 
     async function updateAuthUI() {
       const authStatus = document.getElementById('authStatus');
@@ -1398,8 +1381,6 @@
       return `${day}.${month}.${year}`;
     }
 
-    /* ---------- СКЛАДЫ ---------- */
-
     let warehouseSearchTimer = null;
 
     function initWarehouses() {
@@ -1500,8 +1481,6 @@
       if (!listEl) return;
       listEl.style.display = listEl.style.display === 'block' ? 'none' : 'block';
     }
-
-    /* ---------- КАТЕГОРИИ ---------- */
 
     let categorySearchTimer = null;
     let parentSearchTimer = null;
@@ -1753,7 +1732,74 @@
       listEl.style.display = listEl.style.display === 'block' ? 'none' : 'block';
     }
 
-    /* ---------- ЗАГРУЗКА JSON + AUTH TOKEN + ПУЛЛИНГ СЕССИИ ---------- */
+    function recalcOtherCostsFromSettings() {
+      const ffCosts = toNumber(document.getElementById('ffCosts')?.value);
+      const packagingCosts = toNumber(document.getElementById('packagingCosts')?.value);
+      const useSelfBuys = document.getElementById('useSelfBuys')?.checked ?? false;
+      const giveawaysPercentInput = document.getElementById('giveawaysPercent')?.value;
+      const P = toNumber(document.getElementById('price').value);
+
+      // Текущая логистика до покупателя (forward) при 100% выкупа
+      const lengthCm = toNumber(document.getElementById('lengthCm').value);
+      const widthCm = toNumber(document.getElementById('widthCm').value);
+      const heightCm = toNumber(document.getElementById('heightCm').value);
+
+      let volume_l = 0;
+      if (lengthCm > 0 && widthCm > 0 && heightCm > 0) {
+        const volume_m3 = (lengthCm / 100) * (widthCm / 100) * (heightCm / 100);
+        volume_l = volume_m3 * 1000;
+      }
+
+      const useLocalization = document.getElementById('useLocalization')?.checked ?? true;
+      const ilRaw = toNumber(document.getElementById('ilValue').value);
+      const irpRaw = toNumber(document.getElementById('irpValue').value);
+      const ilValue = useLocalization ? (ilRaw > 0 ? ilRaw : 1) : 1;
+      const irpPercent = useLocalization ? (irpRaw > 0 ? irpRaw : 1) : 0;
+
+      const warehouseCoef = selectedWarehouse && !isNaN(Number(selectedWarehouse.coef))
+        ? Number(selectedWarehouse.coef)
+        : 1;
+
+      let C_ship_to = 0;
+      if (volume_l > 0) {
+        const tariffPerL = getTariffPerLiter(volume_l);
+        let C_fwd_base;
+        if (tariffPerL === null) {
+          if (volume_l <= 1) {
+            C_fwd_base = 46;
+          } else {
+            C_fwd_base = 46 + 14 * (volume_l - 1);
+          }
+        } else {
+          C_fwd_base = volume_l * tariffPerL;
+        }
+        const C_liters = C_fwd_base * warehouseCoef * ilValue;
+        const C_irp = P * (irpPercent / 100);
+        C_ship_to = C_liters + C_irp;
+      }
+
+      const giveawaysPercent = giveawaysPercentInput === ''
+        ? 2
+        : toNumber(giveawaysPercentInput);
+
+      const C_ff = ffCosts;
+      const C_pack = packagingCosts;
+
+      let C_selfBuys = 0;
+      if (useSelfBuys) {
+        const C_logistics_100 = C_ship_to;
+        C_selfBuys = (C_logistics_100 + 15 + 350) * 0.15;
+      }
+
+      const C_giveaways = P * (giveawaysPercent / 100);
+
+      otherCostsFromSettings = C_ff + C_pack + C_selfBuys + C_giveaways;
+
+      const otherInput = document.getElementById('otherCosts');
+      if (!otherCostsManualOverride && otherInput) {
+        otherInput.value = otherCostsFromSettings.toFixed(2);
+      }
+    }
 
     window.addEventListener('DOMContentLoaded', async () => {
       const url = new URL(window.location.href);
@@ -1800,13 +1846,40 @@
         photoFileInput.addEventListener('change', handleLocalPhotoChange);
       }
 
-      // Настройки прочих расходов
       const toggleOtherCostsBtn = document.getElementById('toggleOtherCostsSettings');
       const otherCostsSettings = document.getElementById('otherCostsSettings');
       if (toggleOtherCostsBtn && otherCostsSettings) {
         toggleOtherCostsBtn.addEventListener('click', () => {
           const visible = otherCostsSettings.style.display === 'block';
           otherCostsSettings.style.display = visible ? 'none' : 'block';
+        });
+      }
+
+      // Реальное обновление прочих расходов при изменении настроек
+      ['ffCosts','packagingCosts','giveawaysPercent','price','lengthCm','widthCm','heightCm','ilValue','irpValue']
+        .forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.addEventListener('input', () => {
+              otherCostsManualOverride = false;
+              recalcOtherCostsFromSettings();
+            });
+          }
+        });
+
+      const useSelfBuysEl = document.getElementById('useSelfBuys');
+      if (useSelfBuysEl) {
+        useSelfBuysEl.addEventListener('change', () => {
+          otherCostsManualOverride = false;
+          recalcOtherCostsFromSettings();
+        });
+      }
+
+      const otherCostsInput = document.getElementById('otherCosts');
+      if (otherCostsInput) {
+        otherCostsInput.addEventListener('input', () => {
+          // Пользователь руками меняет сумму — считаем это ручным override
+          otherCostsManualOverride = true;
         });
       }
 
@@ -1880,7 +1953,6 @@
 
       updateAuthUI();
 
-      // Пуллинг сессии первые 15 секунд
       let authPollAttempts = 0;
       const authPollMaxAttempts = 15;
       const authPollInterval = setInterval(async () => {
@@ -1939,8 +2011,6 @@
         });
     });
 
-    /* ---------- ФОТО ---------- */
-
     function handleLocalPhotoChange(event) {
       const file = event.target.files && event.target.files[0];
       const statusEl = document.getElementById('photoStatus');
@@ -1983,8 +2053,6 @@
       reader.readAsDataURL(file);
     }
 
-    /* ---------- РАСЧЁТ ---------- */
-
     function calculate() {
       const lengthCm = toNumber(document.getElementById('lengthCm').value);
       const widthCm = toNumber(document.getElementById('widthCm').value);
@@ -2006,18 +2074,9 @@
       const spp_percent = toNumber(document.getElementById('sppPercent').value);
       const buyout_rate_percent = toNumber(document.getElementById('buyoutRate').value);
       const ads_percent = toNumber(document.getElementById('adsPercent').value);
-      const otherCostsManual = toNumber(document.getElementById('otherCosts').value);
+      const otherCostsField = toNumber(document.getElementById('otherCosts').value);
       const tax_percent = toNumber(document.getElementById('taxPercent').value);
       const acquiring_percent = toNumber(document.getElementById('acquiringPercent').value);
-
-      // Настройки прочих расходов
-      const ffCosts = toNumber(document.getElementById('ffCosts')?.value);
-      const packagingCosts = toNumber(document.getElementById('packagingCosts')?.value);
-      const useSelfBuys = document.getElementById('useSelfBuys')?.checked ?? false;
-      const giveawaysPercentInput = document.getElementById('giveawaysPercent')?.value;
-      const giveawaysPercent = giveawaysPercentInput === ''
-        ? 2
-        : toNumber(giveawaysPercentInput);
 
       const fee_percent = currentFeePercent || 0;
 
@@ -2076,24 +2135,12 @@
         C_logistics_per_unit = C_ship_to + C_ship_back;
       }
 
-      // ---- Прочие расходы по статьям ----
-      const C_ff = ffCosts;
-      const C_pack = packagingCosts;
-
-      // Самовыкупы: логистика до покупателя при 100% выкупа + 15 + 350, затем ×15%
-      const C_logistics_100 = C_ship_to; // forward при 100% выкупа
-      let C_selfBuys = 0;
-      if (useSelfBuys) {
-        C_selfBuys = (C_logistics_100 + 15 + 350) * 0.15;
+      // Пересчитываем настройки, если нет ручного override
+      if (!otherCostsManualOverride) {
+        recalcOtherCostsFromSettings();
       }
 
-      // Раздачи: P × процент раздач
-      const C_giveaways = P * (giveawaysPercent / 100);
-
-      const otherCostsFromSettings = C_ff + C_pack + C_selfBuys + C_giveaways;
-
-      // Итоговые прочие расходы = ручной ввод (если есть) + настройки
-      const other_costs = otherCostsManual + otherCostsFromSettings;
+      const other_costs = otherCostsField;
 
       const C_base_before_tax =
         C_purchase +
@@ -2112,7 +2159,6 @@
       const Profit = P - C_total;
       const margin_percent = P > 0 ? (Profit / P) * 100 : 0;
 
-      // Минимальная цена для целевой маржи
       let P_min = 0;
       const target_margin_percent = toNumber(document.getElementById('targetMargin').value);
       if (target_margin_percent > 0) {
@@ -2197,8 +2243,6 @@
       };
     }
 
-    /* ---------- СБРОС / ИСТОРИЯ / CSV ---------- */
-
     function resetForm() {
       const inputs = document.querySelectorAll('input[type="number"], input[type="text"]');
       inputs.forEach(el => {
@@ -2224,11 +2268,11 @@
 
       document.getElementById('results').style.display = 'none';
 
-      // Сброс дополнительных прочих расходов
       const otherCostsSettings = document.getElementById('otherCostsSettings');
       if (otherCostsSettings) otherCostsSettings.style.display = 'none';
-      const toggleOtherCostsBtn = document.getElementById('toggleOtherCostsSettings');
-      if (toggleOtherCostsBtn) toggleOtherCostsBtn.textContent = '⚙️ Настроить прочие расходы';
+
+      otherCostsManualOverride = false;
+      otherCostsFromSettings = 0;
     }
 
     function saveToTable() {
